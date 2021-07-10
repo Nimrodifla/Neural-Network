@@ -14,5 +14,7 @@ public:
 	~Layer() = default;
 
 	Neuron* getNeuron(int index);
+	void setNeuron(int index, Neuron n);
 	int getSize();
+	std::vector<std::string> getLabels();
 };

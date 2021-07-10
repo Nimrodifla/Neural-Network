@@ -17,9 +17,11 @@ private:
 	std::vector<std::string> outputs;
 	bool training;
 
-	int scoreNetwork(Network* net);
+	float scoreNetwork(Network* net);
 	int layersCount();
 	Network clone();
+	std::vector<float> wantedResult(int litNeuronIndex);
+	std::vector<Neuron> getOutputLayerResult(std::string input);
 
 public:
 	Network(int numOfInputNeurons);

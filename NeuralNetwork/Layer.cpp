@@ -54,3 +54,20 @@ int Layer::getSize()
 {
 	return this->size;
 }
+
+std::vector<std::string> Layer::getLabels()
+{
+	std::vector<std::string> result;
+	int i = 0;
+	for (i = 0; i < this->neurons.size(); i++)
+	{
+		result.push_back(this->neurons[i].label);
+	}
+
+	return result;
+}
+
+void Layer::setNeuron(int index, Neuron n)
+{
+	this->neurons[index] = n;
+}

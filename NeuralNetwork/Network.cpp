@@ -2,10 +2,11 @@
 
 std::mutex trainingMutex;
 
-int Network::scoreNetwork(Network* net)
+float Network::scoreNetwork(Network* net)
 {
 	int i = 0, j = 0;
 	float deltaSum = 0;
+	// go over all inputs
 	for (i = 0; i < this->inputs.size(); i++)
 	{
 		std::string netOutput = net->processInput(this->inputs[i]);
@@ -26,9 +27,32 @@ int Network::scoreNetwork(Network* net)
 				trueOutIndex = j;
 			}
 		}
-		int diff = Helper::definedValue(netOutIndex - trueOutIndex);
+
+		// vec<Neuron> --> vec<float>
+		std::vector<float> netLayerOutput;
+		std::vector<Neuron> netLayerOutputNeurons = net->getOutputLayerResult(this->inputs[i]);
+		for (j = 0; j < netLayerOutputNeurons.size(); j++)
+		{
+			netLayerOutput.push_back(netLayerOutputNeurons[j].value);
+		}
+
+		std::vector<float> wantedLayerOutput = this->wantedResult(trueOutIndex);
+
+		std::vector<float> subbed = Helper::vectorSub(netLayerOutput, wantedLayerOutput);
+
+		float cost = 0;
+		for (j = 0; j < subbed.size(); j++)
+		{
+			subbed[j] = subbed[j] * subbed[j];
+			cost += subbed[j];
+		}
+
 		
-		deltaSum += diff;
+		//int diff = Helper::definedValue(netOutIndex - trueOutIndex);
+		//deltaSum += diff;
+
+		deltaSum += cost;
+		
 	}
 
 	float avg = deltaSum / this->inputs.size();
@@ -40,8 +64,10 @@ int Network::scoreNetwork(Network* net)
 		this->training = false; // stop training
 	}
 
-	float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
-	return 100 - negScore;
+	//float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
+	//return 100 - negScore;
+
+	return avg; // cost - the lower the better
 }
 
 Network::Network(int numOfInputNeurons)
@@ -102,7 +128,7 @@ void Network::train()
 
 		newNetworks.push_back(*this);
 
-		for (i = 0; i < ((NETWORK_CLONES_EACH_GENERATION / 2) - 1); i++)
+		for (i = 0; i < (NETWORK_CLONES_EACH_GENERATION - 1); i++)
 		{
 			// clone this net
 			Network netClone = this->clone();
@@ -117,8 +143,8 @@ void Network::train()
 				for (k = 0; k < layer->getSize(); k++)
 				{
 					Neuron* n = layer->getNeuron(k);
-					// half of the clones nets -> generateRandom,
-					// and second half -> changeABit
+					// half of the clones nets -> generate random,
+					// and second half -> change a bit
 					if (i % 2 == 0)
 					{
 						n->changeWeights();
@@ -137,23 +163,23 @@ void Network::train()
 		}
 
 		// check who is the best
-		int maxScore = -1;
 		if (newNetworks.size() <= 0)
 		{
 			throw std::exception("oof");
 		}
+		float minScore = this->scoreNetwork(&(newNetworks[0]));
 		Network* bestNetwork = &(newNetworks[0]);
 		for (i = 0; i < newNetworks.size(); i++)
 		{
-			if (this->scoreNetwork(&(newNetworks[i])) > maxScore)
+			if (this->scoreNetwork(&(newNetworks[i])) < minScore)
 			{
-				maxScore = this->scoreNetwork(&(newNetworks[i]));
+				minScore = this->scoreNetwork(&(newNetworks[i]));
 				bestNetwork = &(newNetworks[i]);
 			}
 		}
 
 		// for training - show score
-		std::cout << "Score: " << maxScore << " / 100\n";
+		std::cout << "Cost: " << minScore << "\n";
 
 
 		// make this = best net
@@ -168,6 +194,74 @@ void Network::stopTraining()
 }
 
 std::string Network::processInput(std::string input)
+{
+	int i = 0, j = 0, k = 0;
+
+	// get last layers's most lit neuron
+	float maxScore = -1;
+	std::vector<Neuron> lastLayerNeurons = this->getOutputLayerResult(input);
+	Neuron* bestNeuron = &lastLayerNeurons[0];
+	for (i = 0; i < lastLayerNeurons.size(); i++)
+	{
+		Neuron* n = &lastLayerNeurons[i];
+		if (n->value > maxScore)
+		{
+			maxScore = n->value;
+			bestNeuron = n;
+		}
+	}
+
+	return (bestNeuron->label);
+}
+
+int Network::layersCount()
+{
+	return this->layers.size();
+}
+
+Network Network::clone()
+{
+	int i = 0, j = 0;
+
+	Network res(this->layers[0].getSize());
+	for (i = 1; i < this->layers.size(); i++)
+	{
+		Layer layer(this->layers[i].getSize(), this->layers[i].getLabels());
+		for (j = 0; j < layer.getSize(); j++)
+		{
+			Neuron nClone = *(layer.getNeuron(j));
+			layer.setNeuron(j, nClone);
+		}
+
+		res.addLayer(layer);
+	}
+
+	res.addData(this->inputs, this->outputs);
+
+	return res;
+}
+
+std::vector<float> Network::wantedResult(int litNeuronIndex)
+{
+	int i = 0;
+
+	std::vector<float> result;
+	for (i = 0; i < this->layers[this->layers.size() - 1].getSize(); i++)
+	{
+		if (i == litNeuronIndex)
+		{
+			result.push_back(1.0);
+		}
+		else
+		{
+			result.push_back(0.0);
+		}
+	}
+
+	return result;
+}
+
+std::vector<Neuron> Network::getOutputLayerResult(std::string input)
 {
 	int i = 0, j = 0, k = 0;
 
@@ -193,43 +287,16 @@ std::string Network::processInput(std::string input)
 			{
 				neuronValue += (prevLayer->getNeuron(k)->value) * (n->weights[k]);
 			}
-			n->value = neuronValue;
+			n->value = (neuronValue/* + n->bias*/);
 		}
 	}
 
-	// get last layers's most lit neuron
-	float maxScore = -1;
 	Layer* lastLayer = &(this->layers[this->layers.size() - 1]);
-	Neuron* bestNeuron = lastLayer->getNeuron(0);
+	std::vector<Neuron> lastLayerNeurons;
 	for (i = 0; i < lastLayer->getSize(); i++)
 	{
-		Neuron* n = lastLayer->getNeuron(i);
-		if (n->value > maxScore)
-		{
-			maxScore = n->value;
-			bestNeuron = n;
-		}
+		lastLayerNeurons.push_back(*(lastLayer->getNeuron(i)));
 	}
 
-	return (bestNeuron->label);
-}
-
-int Network::layersCount()
-{
-	return this->layers.size();
-}
-
-Network Network::clone()
-{
-	int i = 0;
-
-	Network res(this->layers[0].getSize());
-	for (i = 1; i < this->layers.size(); i++)
-	{
-		res.addLayer(this->layers[i]);
-	}
-
-	res.addData(this->inputs, this->outputs);
-
-	return res;
+	return lastLayerNeurons;
 }

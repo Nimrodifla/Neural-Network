@@ -23,6 +23,9 @@ void Neuron::generateWeights(int weightsCount)
 	}
 
 	this->weights.push_back(((float)max) / 100); // %
+
+	// bias
+	this->bias = ((int)Helper::randomFloat()) % MAX_BIAS;
 }
 
 void Neuron::changeWeights()
@@ -67,5 +70,17 @@ void Neuron::changeWeights()
 			this->weights[i] -= changes[i];
 			this->weights[this->weights.size() - i - 1] += changes[i];
 		}
+	}
+
+	// bias
+	int rnd = ((int)Helper::randomFloat()) % 2;
+	int value = ((((int)Helper::randomFloat()) % MAX_CHANGE) / 100) * (this->bias);
+	if (rnd)
+	{
+		this->bias += value;
+	}
+	else // flipped signs
+	{
+		this->bias -= value;
 	}
 }
