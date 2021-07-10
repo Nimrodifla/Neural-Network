@@ -32,6 +32,14 @@ int Network::scoreNetwork(Network* net)
 	}
 
 	float avg = deltaSum / this->inputs.size();
+
+	// check if perfect
+	if (avg == 0)
+	{
+		std::cout << "Perfect Score!\n";
+		this->training = false; // stop training
+	}
+
 	float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
 	return 100 - negScore;
 }
@@ -43,7 +51,6 @@ Network::Network(int numOfInputNeurons)
 	this->training = false;
 
 	std::vector<std::string> noLabels;
-	//Layer* inputLayer = new Layer(numOfInputNeurons, noLabels);
 	Layer inputLayer(numOfInputNeurons, noLabels);
 	for (i = 0; i < inputLayer.getSize(); i++)
 	{
@@ -92,16 +99,13 @@ void Network::train()
 	{
 
 		std::vector<Network> newNetworks;
-		std::vector<void*> toFree;
 
 		newNetworks.push_back(*this);
 
-		for (i = 0; i < NETWORK_CLONES_EACH_GENERATION - 1; i++)
+		for (i = 0; i < ((NETWORK_CLONES_EACH_GENERATION / 2) - 1); i++)
 		{
 			// clone this net
-			//Network netClone(*this);
 			Network netClone = this->clone();
-			//Network* netClone = new Network(*this);
 
 			// make changes in nuerons weights
 			// go over all layers
@@ -113,13 +117,22 @@ void Network::train()
 				for (k = 0; k < layer->getSize(); k++)
 				{
 					Neuron* n = layer->getNeuron(k);
-					n->generateWeights(prevLayer->getSize());
+					// half of the clones nets -> generateRandom,
+					// and second half -> changeABit
+					if (i % 2 == 0)
+					{
+						n->changeWeights();
+					}
+					else
+					{
+						n->generateWeights(prevLayer->getSize());
+					}
+					
 				}
 			}
 
 			// add to vector
 			newNetworks.push_back(netClone);
-			//toFree.push_back(netClone);
 
 		}
 
@@ -139,18 +152,13 @@ void Network::train()
 			}
 		}
 
-		// debug - show score
+		// for training - show score
 		std::cout << "Score: " << maxScore << " / 100\n";
 
 
 		// make this = best net
 		this->layers = bestNetwork->layers;
 
-		// free all we need to free
-		for (i = 0; i < toFree.size(); i++)
-		{
-			delete toFree[i];
-		}
 	}
 }
 
@@ -181,7 +189,7 @@ std::string Network::processInput(std::string input)
 			float neuronValue = 0;
 			Neuron* n = layer->getNeuron(j);
 			// go over prev layer neurons
-			for (k = 0; k < n->weightsCount; k++)
+			for (k = 0; k < n->weights.size(); k++)
 			{
 				neuronValue += (prevLayer->getNeuron(k)->value) * (n->weights[k]);
 			}
@@ -215,7 +223,6 @@ Network Network::clone()
 {
 	int i = 0;
 
-	// TO DO - checking phase
 	Network res(this->layers[0].getSize());
 	for (i = 1; i < this->layers.size(); i++)
 	{

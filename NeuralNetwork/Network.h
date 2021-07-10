@@ -6,7 +6,7 @@
 #include <mutex>
 #include "Layer.h"
 
-#define NETWORK_CLONES_EACH_GENERATION 100
+#define NETWORK_CLONES_EACH_GENERATION 1000
 
 class Network
 {
@@ -18,17 +18,16 @@ private:
 	bool training;
 
 	int scoreNetwork(Network* net);
+	int layersCount();
+	Network clone();
 
 public:
 	Network(int numOfInputNeurons);
 	~Network() = default;
 
-	int layersCount();
 	void addLayer(Layer layer);
 	void addData(std::vector<std::string> inputs, std::vector<std::string> outputs);
 	void train();
 	void stopTraining();
 	std::string processInput(std::string input);
-
-	Network clone();
 };

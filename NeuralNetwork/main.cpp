@@ -5,17 +5,20 @@ int main()
 {
 	// Build Neural Network
 	Network* net = new Network(3);
-	// layer 1
-	std::vector<std::string> labels;
+	// layer 1 - hidden layer
+	std::vector<std::string> labels; // no labels - empty vector
 	Layer* layer = new Layer(16, labels);
 	net->addLayer(*layer);
-	// layer 2
+	// layer 2 - another hidden layer
+	Layer* layer2 = new Layer(16, labels);
+	net->addLayer(*layer2);
+	// layer 3 - output layer
 	std::vector<std::string> labels2{ "0", "1", "2", "3", "4", "5", "6", "7" };
 	Layer* endLayer = new Layer(8, labels2);
 	net->addLayer(*endLayer);
 	// add data set
-	std::vector<std::string> inputs{ "110", "101", "111", "000" };
-	std::vector<std::string> outputs{ "6", "5", "7", "0" };
+	std::vector<std::string> inputs{ "000", "001", "010", "011", "100", "101", "110", "111" };
+	std::vector<std::string> outputs{ "0", "1", "2", "3", "4", "5", "6", "7" };
 	net->addData(inputs, outputs);
 
 	// Train
