@@ -47,11 +47,15 @@ float Network::scoreNetwork(Network* net)
 			cost += subbed[j];
 		}
 
-		
-		//int diff = Helper::definedValue(netOutIndex - trueOutIndex);
-		//deltaSum += diff;
-
-		deltaSum += cost;
+		if (!SCORE_COST)
+		{
+			int diff = Helper::definedValue(netOutIndex - trueOutIndex);
+			deltaSum += diff;
+		}
+		else
+		{
+			deltaSum += cost;
+		}
 		
 	}
 
@@ -64,10 +68,15 @@ float Network::scoreNetwork(Network* net)
 		this->training = false; // stop training
 	}
 
-	//float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
-	//return 100 - negScore;
-
-	return avg; // cost - the lower the better
+	if (!SCORE_COST)
+	{
+		float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
+		return 100 - negScore;
+	}
+	else
+	{
+		return avg; // cost - the lower the better
+	}
 }
 
 Network::Network(int numOfInputNeurons)
@@ -171,7 +180,7 @@ void Network::train()
 		Network* bestNetwork = &(newNetworks[0]);
 		for (i = 0; i < newNetworks.size(); i++)
 		{
-			if (this->scoreNetwork(&(newNetworks[i])) < minScore)
+			if ((SCORE_COST && this->scoreNetwork(&(newNetworks[i])) < minScore) || (!SCORE_COST && this->scoreNetwork(&(newNetworks[i])) > minScore))
 			{
 				minScore = this->scoreNetwork(&(newNetworks[i]));
 				bestNetwork = &(newNetworks[i]);

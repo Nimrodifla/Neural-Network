@@ -16,7 +16,7 @@ int main()
 	std::vector<std::string> labels2{ "0", "1", "2", "3", "4", "5", "6", "7" };
 	Layer* endLayer = new Layer(8, labels2);
 	net->addLayer(*endLayer);
-	// add data setq
+	// add data set
 	std::vector<std::string> inputs{ "000", "010", "011", "100", "110", "111" };
 	std::vector<std::string> outputs{ "0", "2", "3", "4", "6", "7" };
 	net->addData(inputs, outputs);

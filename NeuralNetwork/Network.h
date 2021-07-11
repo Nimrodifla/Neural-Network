@@ -7,6 +7,7 @@
 #include "Layer.h"
 
 #define NETWORK_CLONES_EACH_GENERATION 1000
+#define SCORE_COST false
 
 class Network
 {
