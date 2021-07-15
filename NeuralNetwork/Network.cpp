@@ -2,27 +2,27 @@
 
 std::mutex trainingMutex;
 
-float Network::scoreNetwork(Network* net)
+float Network::scoreNetwork()
 {
 	int i = 0, j = 0;
 	float deltaSum = 0;
 	// go over all inputs
 	for (i = 0; i < this->inputs.size(); i++)
 	{
-		std::string netOutput = net->processInput(this->inputs[i]);
+		std::string netOutput = this->processInput(this->inputs[i]);
 		std::string trueOutput = this->outputs[i];
 		int netOutIndex = 0;
-		for (j = 0; j < net->layers[net->layers.size() - 1].getSize(); j++)
+		for (j = 0; j < this->layers[this->layers.size() - 1].getSize(); j++)
 		{
-			if (net->layers[net->layers.size() - 1].getNeuron(j)->label == netOutput)
+			if (this->layers[this->layers.size() - 1].getNeuron(j)->label == netOutput)
 			{
 				netOutIndex = j;
 			}
 		}
 		int trueOutIndex = 0;
-		for (j = 0; j < net->layers[net->layers.size() - 1].getSize(); j++)
+		for (j = 0; j < this->layers[this->layers.size() - 1].getSize(); j++)
 		{
-			if (net->layers[net->layers.size() - 1].getNeuron(j)->label == trueOutput)
+			if (this->layers[this->layers.size() - 1].getNeuron(j)->label == trueOutput)
 			{
 				trueOutIndex = j;
 			}
@@ -30,7 +30,7 @@ float Network::scoreNetwork(Network* net)
 
 		// vec<Neuron> --> vec<float>
 		std::vector<float> netLayerOutput;
-		std::vector<Neuron> netLayerOutputNeurons = net->getOutputLayerResult(this->inputs[i]);
+		std::vector<Neuron> netLayerOutputNeurons = this->getOutputLayerResult(this->inputs[i]);
 		for (j = 0; j < netLayerOutputNeurons.size(); j++)
 		{
 			netLayerOutput.push_back(netLayerOutputNeurons[j].value);
@@ -70,7 +70,7 @@ float Network::scoreNetwork(Network* net)
 
 	if (!SCORE_COST)
 	{
-		float negScore = avg * (100 / net->layers[net->layers.size() - 1].getSize());
+		float negScore = avg * (100 / this->layers[this->layers.size() - 1].getSize());
 		return 100 - negScore;
 	}
 	else
@@ -181,13 +181,13 @@ void Network::train()
 			{
 				throw std::exception("oof");
 			}
-			float minScore = this->scoreNetwork(&(newNetworks[0]));
+			float minScore = newNetworks[0].scoreNetwork();
 			Network* bestNetwork = &(newNetworks[0]);
 			for (i = 0; i < newNetworks.size(); i++)
 			{
-				if ((SCORE_COST && this->scoreNetwork(&(newNetworks[i])) < minScore) || (!SCORE_COST && this->scoreNetwork(&(newNetworks[i])) > minScore))
+				if ((SCORE_COST && newNetworks[i].scoreNetwork() < minScore) || (!SCORE_COST && newNetworks[i].scoreNetwork() > minScore))
 				{
-					minScore = this->scoreNetwork(&(newNetworks[i]));
+					minScore = newNetworks[i].scoreNetwork();
 					bestNetwork = &(newNetworks[i]);
 				}
 			}
@@ -208,12 +208,12 @@ void Network::train()
 			cloneNet = clone(); // clone curr network to a new one
 
 			// make changes to layers
-			cloneNet.makeChangesToLayers();
+			//cloneNet.makeChangesToLayers();
 
 			// this = new one
 			this->layers = cloneNet.layers;
 
-			float score = this->scoreNetwork(this);
+			float score = this->scoreNetwork();
 			this->generation++;
 			std::cout << "Gen: " << this->generation << " - Score: " << score << "\n";
 		}
@@ -255,6 +255,7 @@ Network Network::clone()
 {
 	int i = 0, j = 0;
 
+	// copy all layers
 	Network res(this->layers[0].getSize());
 	for (i = 1; i < this->layers.size(); i++)
 	{
@@ -268,6 +269,7 @@ Network Network::clone()
 		res.addLayer(layer);
 	}
 
+	// copy inputs and outputs
 	res.addData(this->inputs, this->outputs);
 
 	return res;
@@ -345,6 +347,7 @@ std::vector<Neuron> Network::getOutputOfLayer(int layerIndex, std::string input)
 	return layerNeurons;
 }
 
+/*
 std::vector<float> Network::getChangesToBackLayerBySingleNeuron(int backLayerIndex, Neuron* neuron, float desiredNeuronValue, std::string input)
 {
 	int i = 0;
@@ -430,7 +433,7 @@ std::vector<float> Network::getChangesToBackLayerByTheFrontLayerByAllInputs(int 
 void Network::makeChangesToLayers()
 {
 	// make changes from the last layer -> the first
-	makeChangesToLayer(this->layers.size() - 1);
+	//makeChangesToLayer(this->layers.size() - 1);
 }
 
 void Network::makeChangesToLayer(int layerIndex, std::vector<float> changesToCurrLayer)
@@ -475,21 +478,87 @@ void Network::changeLayer(int layerIndex, std::vector<float> changes)
 	
 	// TO DO
 }
+*/
 
 std::vector<float> Network::getDesiredOutoutOfLayerByInput(int layerIndex, std::string input)
 {
-	int i = 0;
+	// TO DELETE
+}
 
-	std::vector<Neuron> neuronsOutput = getOutputOfLayer(layerIndex, input);
-	int litNeuronIndex = 0;
+// DEEP LEARNING - TAKE 2
+std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, std::string input)
+{
 
-	for (i = 0; i < neuronsOutput.size(); i++)
+}
+
+void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
+{
+	int i = 0, j = 0;
+
+	// calc the avg changes to weight by all inputs
+	std::vector<float> changes;
+	for (i = 0; i < this->inputs.size(); i++)
 	{
-		if (neuronsOutput[i].value == 1)
+		std::vector<float> temp = calcWeightChanges(layerIndex, neuronIndex, this->inputs[i]);
+		if (changes.size() == 0)
 		{
-			litNeuronIndex = i;
+			for (j = 0; j < temp.size(); j++)
+			{
+				changes.push_back(temp[j]);
+			}
+		}
+		else
+		{
+			for (j = 0; j < temp.size(); j++)
+			{
+				changes[j] += temp[j];
+			}
 		}
 	}
 
-	return wantedResultOfLayer(layerIndex, litNeuronIndex);
+	for (i = 0; i < changes.size(); i++)
+	{
+		changes[i] /= this->inputs.size(); // avg
+	}
+	
+
+	// change
+	Neuron* n = this->layers[layerIndex].getNeuron(neuronIndex);
+	for (i = 0; i < n->weights.size(); i++)
+	{
+		n->weights[i] += changes[i];
+	}
+}
+
+void Network::changeAWholeLayerNeurons(int layerIndex)
+{
+	int i = 0;
+
+	if (layerIndex <= 0)
+	{
+		return;
+	}
+
+	Network netClone = clone();
+	Network secNetClone = clone();
+
+	for (i = 0; i < netClone.layers[layerIndex].getSize(); i++)
+	{
+		Neuron* n = netClone.layers[layerIndex].getNeuron(i);
+
+		netClone.changeNeuronWeightsInLayer(layerIndex, i);
+	}
+
+	// recursive
+	secNetClone.changeAWholeLayerNeurons(layerIndex - 1);
+
+	// compare clone
+	if (netClone.scoreNetwork() < secNetClone.scoreNetwork())
+	{
+		this->layers = netClone.layers;
+	}
+	else
+	{
+		this->layers = secNetClone.layers;
+	}
 }

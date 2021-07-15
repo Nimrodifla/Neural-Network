@@ -20,7 +20,7 @@ private:
 	bool training;
 	int generation;
 
-	float scoreNetwork(Network* net);
+	float scoreNetwork();
 	int layersCount();
 	Network clone();
 	std::vector<float> wantedResult(int litNeuronIndex);
@@ -30,6 +30,7 @@ private:
 	std::vector<Neuron> getOutputOfLayer(int layerIndex, std::string input);
 	std::vector<Neuron> getOutputLayerResult(std::string input);
 
+	/*
 	std::vector<float> getChangesToBackLayerBySingleNeuron(int backLayerIndex, Neuron* neuron, float desiredNeuronValue, std::string input);
 	std::vector<float> getChangesToBackLayerByTheFrontLayer(int backLayerIndex, int frontLayerIndex, std::vector<float> desiredLayerValues, std::string input);
 	std::vector<float> getChangesToBackLayerByTheFrontLayerByAllInputs(int backLayerIndex, int frontLayerIndex);
@@ -37,6 +38,12 @@ private:
 	void makeChangesToLayers();
 	void makeChangesToLayer(int layerIndex, std::vector<float> changesToCurrLayer);
 	void changeLayer(int layerIndex, std::vector<float> changes);
+	*/
+
+	// DEEP LEARNING - TAKE 2
+	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input);
+	void changeNeuronWeightsInLayer(int layerIndex, int neuronIndex);
+	void changeAWholeLayerNeurons(int layerIndex);
 
 public:
 	Network(int numOfInputNeurons);
