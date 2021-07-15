@@ -7,7 +7,8 @@
 #include "Layer.h"
 
 #define NETWORK_CLONES_EACH_GENERATION 1000
-#define SCORE_COST false
+#define SCORE_COST true
+#define DEEP_LEARNING true
 
 class Network
 {
@@ -17,12 +18,25 @@ private:
 	std::vector<std::string> inputs;
 	std::vector<std::string> outputs;
 	bool training;
+	int generation;
 
 	float scoreNetwork(Network* net);
 	int layersCount();
 	Network clone();
 	std::vector<float> wantedResult(int litNeuronIndex);
+	std::vector<float> wantedResultOfLayer(int layerIndex, int litNeuronIndex);
+	std::vector<float> getDesiredOutoutOfLayerByInput(int layerIndex, std::string input);
+
+	std::vector<Neuron> getOutputOfLayer(int layerIndex, std::string input);
 	std::vector<Neuron> getOutputLayerResult(std::string input);
+
+	std::vector<float> getChangesToBackLayerBySingleNeuron(int backLayerIndex, Neuron* neuron, float desiredNeuronValue, std::string input);
+	std::vector<float> getChangesToBackLayerByTheFrontLayer(int backLayerIndex, int frontLayerIndex, std::vector<float> desiredLayerValues, std::string input);
+	std::vector<float> getChangesToBackLayerByTheFrontLayerByAllInputs(int backLayerIndex, int frontLayerIndex);
+	
+	void makeChangesToLayers();
+	void makeChangesToLayer(int layerIndex, std::vector<float> changesToCurrLayer);
+	void changeLayer(int layerIndex, std::vector<float> changes);
 
 public:
 	Network(int numOfInputNeurons);
