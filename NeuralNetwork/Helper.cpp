@@ -35,3 +35,16 @@ std::vector<float> Helper::vectorSub(std::vector<float> a, std::vector<float> b)
 
 	return result;
 }
+
+float Helper::randomFloatRange(float low, float high)
+{
+	if (high - low == 0)
+	{
+		return 0;
+	}
+
+	std::srand(time(0));
+	float r = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+
+	return r;
+}

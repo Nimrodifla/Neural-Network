@@ -7,7 +7,6 @@
 #include "Layer.h"
 
 #define NETWORK_CLONES_EACH_GENERATION 1000
-#define SCORE_COST true
 #define DEEP_LEARNING true
 
 class Network
@@ -25,7 +24,7 @@ private:
 	Network clone();
 	std::vector<float> wantedResult(int litNeuronIndex);
 	std::vector<float> wantedResultOfLayer(int layerIndex, int litNeuronIndex);
-	std::vector<float> getDesiredOutoutOfLayerByInput(int layerIndex, std::string input);
+	//std::vector<float> getDesiredOutoutOfLayerByInput(int layerIndex, std::string input);
 
 	std::vector<Neuron> getOutputOfLayer(int layerIndex, std::string input);
 	std::vector<Neuron> getOutputLayerResult(std::string input);
@@ -41,9 +40,10 @@ private:
 	*/
 
 	// DEEP LEARNING - TAKE 2
-	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input);
+	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input, float desiredValue);
 	void changeNeuronWeightsInLayer(int layerIndex, int neuronIndex);
 	void changeAWholeLayerNeurons(int layerIndex);
+	void changeLayers();
 
 public:
 	Network(int numOfInputNeurons);

@@ -14,7 +14,6 @@ public:
 	float value;
 	float bias;
 	std::vector<float> weights;
-	//int weightsCount;
 
 	Neuron();
 	~Neuron() = default;

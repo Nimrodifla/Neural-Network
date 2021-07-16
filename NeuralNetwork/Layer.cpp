@@ -71,3 +71,18 @@ void Layer::setNeuron(int index, Neuron n)
 {
 	this->neurons[index] = n;
 }
+
+int Layer::getLabelIndex(std::string label)
+{
+	int i = 0;
+	std::vector<std::string> labels = this->getLabels();
+	for (i = 0; i < labels.size(); i++)
+	{
+		if (labels[i] == label)
+		{
+			return i;
+		}
+	}
+
+	throw std::exception("Label hasn't been found in layer...");
+}

@@ -17,4 +17,5 @@ public:
 	void setNeuron(int index, Neuron n);
 	int getSize();
 	std::vector<std::string> getLabels();
+	int getLabelIndex(std::string label);
 };
