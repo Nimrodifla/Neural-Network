@@ -3,6 +3,8 @@
 #include <vector>
 #include <ctime>
 
+#define WHEN_FORMULA_IS_ONE 5
+
 class Helper
 {
 public:
@@ -10,4 +12,5 @@ public:
 	static float randomFloat();
 	static std::vector<float> vectorSub(std::vector<float> a, std::vector<float> b);
 	static float randomFloatRange(float low, float high);
+	static float scaleBetweenZeroAndOne(float num);
 };

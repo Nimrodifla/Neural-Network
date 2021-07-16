@@ -36,7 +36,7 @@ int main()
 	while (flag)
 	{
 		std::string input = "";
-		std::cout << "Enter 3 digits binary string: ";
+		std::cout << "Enter input string: ";
 		std::cin >> input;
 
 		try

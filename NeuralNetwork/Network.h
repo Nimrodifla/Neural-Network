@@ -24,20 +24,9 @@ private:
 	Network clone();
 	std::vector<float> wantedResult(int litNeuronIndex);
 	std::vector<float> wantedResultOfLayer(int layerIndex, int litNeuronIndex);
-	//std::vector<float> getDesiredOutoutOfLayerByInput(int layerIndex, std::string input);
 
 	std::vector<Neuron> getOutputOfLayer(int layerIndex, std::string input);
 	std::vector<Neuron> getOutputLayerResult(std::string input);
-
-	/*
-	std::vector<float> getChangesToBackLayerBySingleNeuron(int backLayerIndex, Neuron* neuron, float desiredNeuronValue, std::string input);
-	std::vector<float> getChangesToBackLayerByTheFrontLayer(int backLayerIndex, int frontLayerIndex, std::vector<float> desiredLayerValues, std::string input);
-	std::vector<float> getChangesToBackLayerByTheFrontLayerByAllInputs(int backLayerIndex, int frontLayerIndex);
-	
-	void makeChangesToLayers();
-	void makeChangesToLayer(int layerIndex, std::vector<float> changesToCurrLayer);
-	void changeLayer(int layerIndex, std::vector<float> changes);
-	*/
 
 	// DEEP LEARNING - TAKE 2
 	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input, float desiredValue);

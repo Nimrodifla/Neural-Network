@@ -14,18 +14,13 @@ void Neuron::generateWeights(int weightsCount)
 
 	this->weights.clear();
 
-	for (i = 0; i < (weightsCount - 1); i++)
+	for (i = 0; i < weightsCount; i++)
 	{
-
-		int weight = ((int)Helper::randomFloat()) % ((int)max);
-		this->weights.push_back(((float)weight) / 100); // %
-		max -= weight;
+		this->weights.push_back(Helper::randomFloatRange(0, 1));
 	}
 
-	this->weights.push_back(((float)max) / 100); // %
-
 	// bias
-	this->bias = ((int)Helper::randomFloat()) % MAX_BIAS;
+	//this->bias = ((int)Helper::randomFloat()) % MAX_BIAS;
 }
 
 void Neuron::changeWeights()
