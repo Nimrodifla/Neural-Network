@@ -31,7 +31,6 @@ private:
 	// DEEP LEARNING - TAKE 2
 	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input, float desiredValue);
 	void changeNeuronWeightsInLayer(int layerIndex, int neuronIndex);
-	void changeAWholeLayerNeurons(int layerIndex);
 	void changeLayers();
 
 public:

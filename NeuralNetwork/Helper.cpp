@@ -36,6 +36,25 @@ std::vector<float> Helper::vectorSub(std::vector<float> a, std::vector<float> b)
 	return result;
 }
 
+std::vector<float> Helper::vectorAdd(std::vector<float> a, std::vector<float> b)
+{
+	int i = 0;
+
+	std::vector<float> result;
+
+	if (a.size() != b.size())
+	{
+		throw std::exception("Vectors aren't the same length!");
+	}
+
+	for (i = 0; i < a.size(); i++)
+	{
+		result.push_back(a[i] + b[i]);
+	}
+
+	return result;
+}
+
 float Helper::randomFloatRange(float low, float high)
 {
 	if (high - low == 0)
