@@ -185,7 +185,7 @@ int Network::layersCount()
 
 Network Network::clone()
 {
-	int i = 0, j = 0;
+	int i = 0, j = 0, k = 0;
 
 	// copy all layers
 	Network res(this->layers[0].getSize());
@@ -194,7 +194,16 @@ Network Network::clone()
 		Layer layer(this->layers[i].getSize(), this->layers[i].getLabels());
 		for (j = 0; j < layer.getSize(); j++)
 		{
-			Neuron nClone = *(layer.getNeuron(j));
+			Neuron nClone;
+
+			nClone.bias = layer.getNeuron(j)->bias;
+			nClone.label = layer.getNeuron(j)->label;
+			nClone.value = layer.getNeuron(j)->value;
+			std::vector<float> w;
+			for (k = 0; k < layer.getNeuron(j)->weights.size(); k++)
+				w.push_back(layer.getNeuron(j)->weights[k]);
+			
+			nClone.weights = w;
 			layer.setNeuron(j, nClone);
 		}
 

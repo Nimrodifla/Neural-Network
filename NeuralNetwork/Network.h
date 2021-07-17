@@ -19,7 +19,7 @@ private:
 	bool training;
 	int generation;
 
-	float scoreNetwork();
+	float scoreNetwork(); // the less - the better
 	int layersCount();
 	Network clone();
 	std::vector<float> wantedResult(int litNeuronIndex);
