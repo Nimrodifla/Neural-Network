@@ -298,7 +298,7 @@ std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, s
 	// find which neurons in backLayer (index - 1) are equal to desired at this input and make their weight stronger
 	//bool makeOne = (desiredValue >= 0.5);
 	bool isGreater = (currVal > desiredValue); // is the current val greater than the desired value
-	float nudge = 1; // THE NUDGE
+	float nudge = NUDGE_VALUE; // THE NUDGE
 	for (i = 0; i < backLayerOutput.size(); i++)
 	{
 		bool isOne = backLayerOutput[i] >= 0.5;
@@ -443,7 +443,7 @@ void Network::changeLayers()
 
 	std::vector<Network> clones;
 
-	clones.push_back(*this);
+	clones.push_back(*this); // if none of the clones are better keep it as it is
 
 	for (i = 1; i < this->layers.size(); i++)
 	{
