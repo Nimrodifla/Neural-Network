@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <div id="btns"></div>
+        <br>
+        <button onclick="highlighting = !highlighting;">toggle highlighting</button>
+        <button onclick="ex()">export</button>
+    </body>
+    <script>
+        let gridSide = 10;
+        let btnIds = [];
+        let grid = [];
+        for (let i = 0; i < gridSide * gridSide; i++)
+        {
+            grid.push(0);
+        }
+        let btnsDiv = document.getElementById("btns");
+        let highlighting = true;
+        for (let i = 0; i < gridSide * gridSide; i++)
+        {
+            if (i % gridSide == 0)
+            {
+                btnsDiv.innerHTML += "<br>";
+            }
+            let id = i.toString();
+            btnIds.push(id);
+            btnsDiv.innerHTML += '<button id="' + id + '" class="b" onmouseenter="e(' + id + ')" onclick="c(' + id + ')"> </button>';
+        }
+
+        function e(id)
+        {
+            if (highlighting)
+            {
+                let btn = document.getElementById(id);
+                btn.style.backgroundColor = "black";
+                grid[parseInt(id)] = 1;
+            }
+        }
+
+        function c(id)
+        {
+            if (!highlighting)
+            {
+                let btn = document.getElementById(id);
+                if (grid[parseInt(id)] == 1)
+                {
+                    btn.style.backgroundColor = "lightgrey";
+                    grid[parseInt(id)] = 0;
+                }
+                else{
+                    btn.style.backgroundColor = "black";
+                    grid[parseInt(id)] = 1;
+                }
+            }
+        }
+
+        function ex()
+        {
+            let res = "";
+            for (let i = 0; i < grid.length; i++)
+            {
+                res += grid[i].toString();
+            }
+            console.log(res);
+            alert("In console!");
+        }
+    </script>
+    <style>
+        .b {
+            width: 30px;
+            height: 30px;
+            margin: 0px;
+        }
+    </style>
+</html>

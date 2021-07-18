@@ -41,7 +41,6 @@ float Network::scoreNetwork()
 		float cost = 0;
 		for (j = 0; j < subbed.size(); j++)
 		{
-			//subbed[j] = fabsf(subbed[j]) /*subbed[j] * subbed[j]*/;
 			cost += subbed[j] * subbed[j];
 		}
 

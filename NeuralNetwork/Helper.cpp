@@ -66,18 +66,7 @@ float Helper::randomFloatRange(float low, float high)
 
 float Helper::scaleBetweenZeroAndOne(float num)
 {
-	/*
-	float a = (1 / ((float)WHEN_FORMULA_IS_ONE));
-
-	float temp = ((a * definedValue(num)) + (a * num)) / 2;
-
-	if (temp > 1)
-	{
-		return (float)1.0;
-	}
-	*/
-
-	float temp = 1 / (1 + powf(2, -num));
+	float temp = 1 / (1 + powf(1.5, -num));
 
 	return temp;
 }
