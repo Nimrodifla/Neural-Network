@@ -133,12 +133,12 @@ void Network::train()
 
 		float cloneScore = cloneNet.scoreNetwork();
 		float thisScore = 
-		prevScore = this->scoreNetwork();;
+		prevScore = this->scoreNetwork();
 
 		// this = new one
 		this->layers = cloneNet.cloneLayers();
 
-		float score = this->scoreNetwork();;
+		float score = this->scoreNetwork();
 
 		std::string change; // the change in score compared to the prev network
 		if (prevScore < score)
