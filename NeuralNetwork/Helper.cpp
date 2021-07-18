@@ -63,7 +63,9 @@ float Helper::randomFloatRange(float low, float high)
 	}
 
 	std::srand(time(0));
-	float r = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+	float num = rand() + rndNum;
+	rndNum += 1371;
+	float r = low + static_cast <float> (num) / (static_cast <float> ((RAND_MAX + rndNum) / (high - low)));
 
 	return r;
 }

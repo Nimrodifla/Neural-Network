@@ -72,20 +72,26 @@ Network::Network(int numOfInputNeurons)
 	Layer inputLayer(numOfInputNeurons, noLabels);
 	for (i = 0; i < inputLayer.getSize(); i++)
 	{
-		inputLayer.getNeuron(i)->generateWeights(1);
+		std::vector<float> w{ 1 };
+		inputLayer.getNeuron(i)->weights = w;
 	}
 	this->layers.push_back(inputLayer);
 }
 
 void Network::addLayer(Layer layer)
 {
-	int i = 0;
+	int i = 0, j = 0;
 
 	Layer* lastLayer = &(this->layers[this->layers.size() - 1]);
 
 	for (i = 0; i < layer.getSize(); i++)
 	{
-		layer.getNeuron(i)->generateWeights(lastLayer->getSize());
+		std::vector<float> w;
+		for (j = 0; j < lastLayer->getSize(); j++)
+		{
+			w.push_back(Helper::randomFloatRange(0, 1));
+		}
+		layer.getNeuron(i)->weights = w;
 	}
 
 	this->layers.push_back(layer);
@@ -125,30 +131,25 @@ void Network::train()
 		// make changes to layers
 		cloneNet.changeLayers();
 
-		
-		bool mutateEvenIfNotBetter = true;
 		float cloneScore = cloneNet.scoreNetwork();
-		float thisScore = this->scoreNetwork();
-		if ((thisScore > cloneScore) || (mutateEvenIfNotBetter))
-		{
-			prevScore = thisScore;
+		float thisScore = 
+		prevScore = this->scoreNetwork();;
 
-			// this = new one
-			this->layers = cloneNet.layers;
+		// this = new one
+		this->layers = cloneNet.cloneLayers();
 
-			float score = cloneScore;
+		float score = this->scoreNetwork();;
 
-			std::string change; // the change in score compared to the prev network
-			if (prevScore < score)
-				change = "+";
-			else if (prevScore > score)
-				change = "-";
-			else
-				change = ".";
+		std::string change; // the change in score compared to the prev network
+		if (prevScore < score)
+			change = "+";
+		else if (prevScore > score)
+			change = "-";
+		else
+			change = ".";
 
-			this->generation++;
-			std::cout << "Gen: " << this->generation << " - Score: " << score << " " << change << "\n";
-		}
+		this->generation++;
+		std::cout << "Gen: " << this->generation << " - Score: " << score << " " << change << "\n";
 	}
 }
 
@@ -185,30 +186,10 @@ int Network::layersCount()
 
 Network Network::clone()
 {
-	int i = 0, j = 0, k = 0;
 
 	// copy all layers
 	Network res(this->layers[0].getSize());
-	for (i = 1; i < this->layers.size(); i++)
-	{
-		Layer layer(this->layers[i].getSize(), this->layers[i].getLabels());
-		for (j = 0; j < layer.getSize(); j++)
-		{
-			Neuron nClone;
-
-			nClone.bias = layer.getNeuron(j)->bias;
-			nClone.label = layer.getNeuron(j)->label;
-			nClone.value = layer.getNeuron(j)->value;
-			std::vector<float> w;
-			for (k = 0; k < layer.getNeuron(j)->weights.size(); k++)
-				w.push_back(layer.getNeuron(j)->weights[k]);
-			
-			nClone.weights = w;
-			layer.setNeuron(j, nClone);
-		}
-
-		res.addLayer(layer);
-	}
+	res.layers = this->cloneLayers();
 
 	// copy inputs and outputs
 	res.addData(this->inputs, this->outputs);
@@ -360,7 +341,7 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 				// take the size / 2 most heavy neurons - they need to be 1's - the rest 0
 				//Neuron* n = this->layers[j].getNeuron(k);
 				std::vector<int> heaviestIndexes;
-				std::vector<float> weightsClone = frontNeuron->weights;
+				std::vector<float> weightsClone = Helper::vectorClone(frontNeuron->weights);
 
 				for (u = 0; u < weightsClone.size() / 2; u++) // how many heviests
 				{
@@ -411,19 +392,11 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 				// add to layerDesired
 				if (layerDesired.size() == 0)
 				{
-					layerDesired = layerDesiredBefore;
-					/*for (k = 0; k < layerDesiredBefore.size(); k++)
-					{
-						layerDesired.push_back(layerDesiredBefore[k]);
-					}*/
+					layerDesired = Helper::vectorClone(layerDesiredBefore);
 				}
 				else
 				{
 					layerDesired = Helper::vectorAdd(layerDesired, layerDesiredBefore);
-					/*for (k = 0; k < layerDesiredBefore.size(); k++)
-					{
-						layerDesired[k] += layerDesiredBefore[k];
-					}*/
 				}
 			}
 
@@ -433,26 +406,20 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 				layerDesired[k] /= this->layers[j + 1].getSize();
 			}
 
-			lastDesired = layerDesired; // recurcive
+			lastDesired = Helper::vectorClone(layerDesired); // recurcive
 		}
 
 		// calc weight changes
-		std::vector<float> temp = calcWeightChanges(layerIndex, neuronIndex, this->inputs[i], lastDesired[neuronIndex]);
+		std::string input = this->inputs[i];
+		float desired = lastDesired[neuronIndex];
+		std::vector<float> temp = calcWeightChanges(layerIndex, neuronIndex, input, desired);
 		if (changes.size() == 0)
 		{
-			changes = temp;
-			/*for (j = 0; j < temp.size(); j++)
-			{
-				changes.push_back(temp[j]);
-			}*/
+			changes = Helper::vectorClone(temp);
 		}
 		else
 		{
 			changes = Helper::vectorAdd(changes, temp);
-			/*for (j = 0; j < temp.size(); j++)
-			{
-				changes[j] += temp[j];
-			}*/
 		}
 	}
 
@@ -472,14 +439,13 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 
 void Network::changeLayers()
 {
-
 	int i = 0, j = 0;
 
 	std::vector<Network> clones;
 
 	clones.push_back(*this);
 
-	for (i = 1; i < this->layers.size() - 1; i++)
+	for (i = 1; i < this->layers.size(); i++)
 	{
 		Network netClone = clone();
 		Layer* layer = &(this->layers[i]);
@@ -506,5 +472,33 @@ void Network::changeLayers()
 	Network* bestClone = &(clones[cloneIndex]);
 
 	// this = best clone
-	this->layers = bestClone->layers;
+	this->layers = bestClone->cloneLayers();
+}
+
+std::vector<Layer> Network::cloneLayers()
+{
+	int i = 0, j = 0, k = 0;
+
+	std::vector<Layer> result;
+
+	for (i = 0; i < this->layers.size(); i++)
+	{
+		Layer* toClone = &(this->layers[i]);
+		Layer layer(this->layers[i].getSize(), this->layers[i].getLabels());
+		for (j = 0; j < layer.getSize(); j++)
+		{
+			Neuron nClone;
+
+			nClone.bias = toClone->getNeuron(j)->bias;
+			nClone.label = toClone->getNeuron(j)->label;
+			nClone.value = toClone->getNeuron(j)->value;
+			nClone.weights = Helper::vectorClone(toClone->getNeuron(j)->weights);
+			
+			layer.setNeuron(j, nClone);
+		}
+
+		result.push_back(layer);
+	}
+
+	return result;
 }

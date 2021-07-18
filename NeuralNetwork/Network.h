@@ -33,6 +33,8 @@ private:
 	void changeNeuronWeightsInLayer(int layerIndex, int neuronIndex);
 	void changeLayers();
 
+	std::vector<Layer> cloneLayers();
+
 public:
 	Network(int numOfInputNeurons);
 	~Network() = default;
