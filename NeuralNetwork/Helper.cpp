@@ -70,3 +70,10 @@ float Helper::scaleBetweenZeroAndOne(float num)
 
 	return temp;
 }
+
+float Helper::generationBasedNudge(int gen)
+{
+	float temp = randomFloatRange(0.1, 1); // is just random, not based ob the gen
+
+	return temp;
+}

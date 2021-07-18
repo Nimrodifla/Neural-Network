@@ -9,14 +9,7 @@ float Network::scoreNetwork()
 	{
 		std::string netOutput = this->processInput(this->inputs[i]);
 		std::string trueOutput = this->outputs[i];
-		int netOutIndex = 0;
-		for (j = 0; j < this->layers[this->layers.size() - 1].getSize(); j++)
-		{
-			if (this->layers[this->layers.size() - 1].getNeuron(j)->label == netOutput)
-			{
-				netOutIndex = j;
-			}
-		}
+
 		int trueOutIndex = 0;
 		for (j = 0; j < this->layers[this->layers.size() - 1].getSize(); j++)
 		{
@@ -121,9 +114,12 @@ void Network::train(bool prints)
 	this->training = true;
 
 	float prevScore = 0;
+	int prevGen = 0;
 	while (this->training)
 	{
 		// DEEP LERNING
+
+		this->generation++;
 
 		Network cloneNet = clone(); // clone curr network to a new one
 
@@ -131,7 +127,6 @@ void Network::train(bool prints)
 		cloneNet.changeLayers();
 
 		float cloneScore = cloneNet.scoreNetwork();
-		float thisScore = 
 		prevScore = this->scoreNetwork();
 
 		// this = new one
@@ -141,18 +136,20 @@ void Network::train(bool prints)
 
 		if (prints)
 		{
-			std::string change; // the change in score compared to the prev network
+			std::string change; // the change in score compared to the prev gen
 			if (prevScore < score)
 				change = "worse";
 			else if (prevScore > score)
+			{
 				change = "better";
+				prevGen = this->generation;
+			}
 			else
 				change = "same";
 
-			std::cout << "Gen: " << this->generation << " - Score: " << score << " " << change << "\n";
+			std::cout << "Gen: " << this->generation << " - Score: " << score << " - " << change << " - last improve at Gen " << prevGen << "\n";
 		}
 
-		this->generation++;
 	}
 }
 
@@ -197,6 +194,8 @@ Network Network::clone()
 
 	// copy inputs and outputs
 	res.addData(this->inputs, this->outputs);
+
+	res.generation = this->generation;
 
 	return res;
 }
@@ -302,18 +301,41 @@ std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, s
 
 	std::vector<float> changes;
 	// find which neurons in backLayer (index - 1) are equal to desired at this input and make their weight stronger
-	bool isGreater = (currVal > desiredValue); // is the current val greater than the desired value
-	float nudge = Helper::randomFloatRange(1, 2); // THE NUDGE
+	bool isGreater = (currVal >= desiredValue); // is the current val greater than the desired value
+	float nudge = Helper::generationBasedNudge(this->generation); /*Helper::randomFloatRange(0, 1);*/ // THE NUDGE
 	for (i = 0; i < backLayerOutput.size(); i++)
 	{
-		bool isOne = backLayerOutput[i] >= 0.5;
-		if (isOne == isGreater)
+		bool isOne = backLayerOutput[i] > 0;
+		bool isInsagnificant = backLayerOutput[i] >= -SAGNIFICANT && backLayerOutput[i] <= SAGNIFICANT;
+		if (isGreater) // value V
 		{
-			changes.push_back(n->weights[i] - nudge);
+			if (isOne && !isInsagnificant)
+			{
+				changes.push_back(-nudge);
+			}
+			else if (!isOne && !isInsagnificant)
+			{
+				changes.push_back(nudge);
+			}
+			else
+			{
+				changes.push_back(0);
+			}
 		}
-		else
+		else // value ^
 		{
-			changes.push_back(n->weights[i] + nudge);
+			if (isOne && !isInsagnificant)
+			{
+				changes.push_back(nudge);
+			}
+			else if (!isOne && !isInsagnificant)
+			{
+				changes.push_back(-nudge);
+			}
+			else
+			{
+				changes.push_back(0);
+			}
 		}
 	}
 
@@ -437,7 +459,7 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 	Neuron* n = this->layers[layerIndex].getNeuron(neuronIndex);
 	for (i = 0; i < n->weights.size(); i++)
 	{
-		n->weights[i] = changes[i];
+		n->weights[i] += changes[i];
 	}
 }
 
@@ -474,6 +496,7 @@ void Network::changeLayers()
 	}
 
 	Network* bestClone = &(clones[cloneIndex]);
+	//std::cout << bestClone->scoreNetwork() << "\n";
 
 	// this = best clone
 	this->layers = bestClone->cloneLayers();

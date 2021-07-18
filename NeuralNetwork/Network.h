@@ -8,6 +8,7 @@
 
 #define NETWORK_CLONES_EACH_GENERATION 1000
 #define DEEP_LEARNING true
+#define SAGNIFICANT 0.1
 //#define NUDGE_VALUE 0.5
 
 class Network

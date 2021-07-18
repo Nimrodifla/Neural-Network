@@ -14,6 +14,8 @@ public:
 	static std::vector<float> vectorAdd(std::vector<float> a, std::vector<float> b);
 	static float randomFloatRange(float low, float high);
 	static float scaleBetweenZeroAndOne(float num);
+	static float generationBasedNudge(int gen);
+
 	template <typename T>
 	static std::vector<T> vectorClone(std::vector<T> vectorToClone)
 	{
