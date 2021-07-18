@@ -41,8 +41,8 @@ float Network::scoreNetwork()
 		float cost = 0;
 		for (j = 0; j < subbed.size(); j++)
 		{
-			subbed[j] = subbed[j] * subbed[j];
-			cost += subbed[j];
+			//subbed[j] = fabsf(subbed[j]) /*subbed[j] * subbed[j]*/;
+			cost += subbed[j] * subbed[j];
 		}
 
 		deltaSum += cost;
@@ -114,7 +114,7 @@ void Network::addData(std::vector<std::string> inputs, std::vector<std::string> 
 	}
 }
 
-void Network::train()
+void Network::train(bool prints)
 {
 	int i = 0, j = 0, k = 0;
 
@@ -140,16 +140,20 @@ void Network::train()
 
 		float score = this->scoreNetwork();
 
-		std::string change; // the change in score compared to the prev network
-		if (prevScore < score)
-			change = "+";
-		else if (prevScore > score)
-			change = "-";
-		else
-			change = ".";
+		if (prints)
+		{
+			std::string change; // the change in score compared to the prev network
+			if (prevScore < score)
+				change = "worse";
+			else if (prevScore > score)
+				change = "better";
+			else
+				change = "same";
+
+			std::cout << "Gen: " << this->generation << " - Score: " << score << " " << change << "\n";
+		}
 
 		this->generation++;
-		std::cout << "Gen: " << this->generation << " - Score: " << score << " " << change << "\n";
 	}
 }
 
@@ -257,6 +261,8 @@ std::vector<Neuron> Network::getOutputOfLayer(int layerIndex, std::string input)
 				neuronValue += (prevLayer->getNeuron(k)->value) * (n->weights[k]);
 			}
 			n->value = Helper::scaleBetweenZeroAndOne(neuronValue/* + n->bias*/);
+			int x = 5;
+			x = 9;
 		}
 	}
 
@@ -297,9 +303,8 @@ std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, s
 
 	std::vector<float> changes;
 	// find which neurons in backLayer (index - 1) are equal to desired at this input and make their weight stronger
-	//bool makeOne = (desiredValue >= 0.5);
 	bool isGreater = (currVal > desiredValue); // is the current val greater than the desired value
-	float nudge = Helper::randomFloatRange(0, 2); // THE NUDGE
+	float nudge = Helper::randomFloatRange(1, 2); // THE NUDGE
 	for (i = 0; i < backLayerOutput.size(); i++)
 	{
 		bool isOne = backLayerOutput[i] >= 0.5;
@@ -340,7 +345,6 @@ void Network::changeNeuronWeightsInLayer(int layerIndex, int neuronIndex)
 				std::vector<float> layerDesiredBefore;
 
 				// take the size / 2 most heavy neurons - they need to be 1's - the rest 0
-				//Neuron* n = this->layers[j].getNeuron(k);
 				std::vector<int> heaviestIndexes;
 				std::vector<float> weightsClone = Helper::vectorClone(frontNeuron->weights);
 
@@ -504,8 +508,8 @@ std::vector<Layer> Network::cloneLayers()
 	return result;
 }
 
-void Network::StartTrainig()
+void Network::StartTrainig(bool prints)
 {
-	this->trainingThread = new std::thread(&Network::train, this);
+	this->trainingThread = new std::thread(&Network::train, this, prints);
 	this->trainingThread->detach();
 }

@@ -19,5 +19,4 @@ public:
 	~Neuron() = default;
 
 	void generateWeights(int weightsCount);
-	void changeWeights();
 };

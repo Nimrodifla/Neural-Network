@@ -1,8 +1,9 @@
 #include "Network.h"
-#include <thread>
 
 int main()
 {
+	// ---- EXAMPLE OF LIBRARY USE ----
+
 	// Build Neural Network
 	Network* net = new Network(3);
 	// layer 1 - hidden layer
@@ -18,11 +19,11 @@ int main()
 	// add data set
 	std::vector<std::string> inputs{ "000", "010", "011", "100", "110", "111" };
 	std::vector<std::string> outputs{ "0", "2", "3", "4", "6", "7" };
-	net->addData(inputs, outputs);
+	net->addData(inputs, outputs); // add training data to network
 
 	// Train
-	net->StartTrainig();
-	getchar();
+	net->StartTrainig(true);
+	getchar(); // training until user presses enter
 	net->StopTraining();
 
 	// After Training

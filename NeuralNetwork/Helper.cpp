@@ -6,15 +6,9 @@ float Helper::definedValue(float x)
 {
 	if (x < 0)
 	{
-		return -x;
+		return (-1 * x);
 	}
 	return x;
-}
-
-float Helper::randomFloat()
-{
-	std::srand(std::time(nullptr));
-	return (std::rand() + rndNum);
 }
 
 std::vector<float> Helper::vectorSub(std::vector<float> a, std::vector<float> b)
@@ -72,6 +66,7 @@ float Helper::randomFloatRange(float low, float high)
 
 float Helper::scaleBetweenZeroAndOne(float num)
 {
+	/*
 	float a = (1 / ((float)WHEN_FORMULA_IS_ONE));
 
 	float temp = ((a * definedValue(num)) + (a * num)) / 2;
@@ -80,6 +75,9 @@ float Helper::scaleBetweenZeroAndOne(float num)
 	{
 		return (float)1.0;
 	}
+	*/
+
+	float temp = 1 / (1 + powf(2, -num));
 
 	return temp;
 }

@@ -8,7 +8,7 @@
 
 #define NETWORK_CLONES_EACH_GENERATION 1000
 #define DEEP_LEARNING true
-#define NUDGE_VALUE 0.5
+//#define NUDGE_VALUE 0.5
 
 class Network
 {
@@ -31,14 +31,14 @@ private:
 	std::vector<Neuron> getOutputOfLayer(int layerIndex, std::string input);
 	std::vector<Neuron> getOutputLayerResult(std::string input);
 
-	// DEEP LEARNING - TAKE 2
+	// DEEP LEARNING
 	std::vector<float> calcWeightChanges(int layerIndex, int neuronIndex, std::string input, float desiredValue);
 	void changeNeuronWeightsInLayer(int layerIndex, int neuronIndex);
 	void changeLayers();
 
 	std::vector<Layer> cloneLayers();
 
-	void train();
+	void train(bool prints);
 
 public:
 	Network(int numOfInputNeurons);
@@ -48,7 +48,7 @@ public:
 	void addLayer(Layer layer);
 	void addData(std::vector<std::string> inputs, std::vector<std::string> outputs);
 	// train network
-	void StartTrainig();
+	void StartTrainig(bool prints);
 	void StopTraining();
 	// input --> output
 	std::string processInput(std::string input);
