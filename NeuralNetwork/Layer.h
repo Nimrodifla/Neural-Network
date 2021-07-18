@@ -9,8 +9,11 @@ private:
 	int size;
 	std::vector<Neuron> neurons;
 
+	void initLayer(int size, std::vector<std::string> labels);
+
 public:
 	Layer(int size, std::vector<std::string> labels);
+	Layer(int size); // no labels
 	~Layer() = default;
 
 	Neuron* getNeuron(int index);

@@ -67,9 +67,9 @@ Network::Network(int numOfInputNeurons)
 
 	this->training = false;
 	this->generation = 0;
+	this->trainingThread = nullptr;
 
-	std::vector<std::string> noLabels;
-	Layer inputLayer(numOfInputNeurons, noLabels);
+	Layer inputLayer(numOfInputNeurons);
 	for (i = 0; i < inputLayer.getSize(); i++)
 	{
 		std::vector<float> w{ 1 };
@@ -153,9 +153,10 @@ void Network::train()
 	}
 }
 
-void Network::stopTraining()
+void Network::StopTraining()
 {
 	this->training = false;
+	this->trainingThread->~thread();
 }
 
 std::string Network::processInput(std::string input)
@@ -298,7 +299,7 @@ std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, s
 	// find which neurons in backLayer (index - 1) are equal to desired at this input and make their weight stronger
 	//bool makeOne = (desiredValue >= 0.5);
 	bool isGreater = (currVal > desiredValue); // is the current val greater than the desired value
-	float nudge = NUDGE_VALUE; // THE NUDGE
+	float nudge = Helper::randomFloatRange(0, 2); // THE NUDGE
 	for (i = 0; i < backLayerOutput.size(); i++)
 	{
 		bool isOne = backLayerOutput[i] >= 0.5;
@@ -501,4 +502,10 @@ std::vector<Layer> Network::cloneLayers()
 	}
 
 	return result;
+}
+
+void Network::StartTrainig()
+{
+	this->trainingThread = new std::thread(&Network::train, this);
+	this->trainingThread->detach();
 }

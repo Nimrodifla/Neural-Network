@@ -13,6 +13,8 @@
 class Network
 {
 private:
+	std::thread* trainingThread;
+
 	std::vector<Layer> layers;
 
 	std::vector<std::string> inputs;
@@ -36,13 +38,18 @@ private:
 
 	std::vector<Layer> cloneLayers();
 
+	void train();
+
 public:
 	Network(int numOfInputNeurons);
 	~Network() = default;
 
+	// build network
 	void addLayer(Layer layer);
 	void addData(std::vector<std::string> inputs, std::vector<std::string> outputs);
-	void train();
-	void stopTraining();
+	// train network
+	void StartTrainig();
+	void StopTraining();
+	// input --> output
 	std::string processInput(std::string input);
 };

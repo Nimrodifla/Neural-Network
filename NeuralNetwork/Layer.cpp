@@ -1,6 +1,25 @@
 #include "Layer.h"
 
+Layer::Layer(int size)
+{
+	int i = 0;
+
+	std::vector<std::string> l;
+
+	for (i = 0; i < size; i++)
+	{
+		l.push_back("");
+	}
+
+	initLayer(size, l);
+}
+
 Layer::Layer(int size, std::vector<std::string> labels)
+{
+	initLayer(size, labels);
+}
+
+void Layer::initLayer(int size, std::vector<std::string> labels)
 {
 	int i = 0;
 	bool noLabels = false;
@@ -15,7 +34,6 @@ Layer::Layer(int size, std::vector<std::string> labels)
 
 	for (i = 0; i < this->size; i++)
 	{
-		//Neuron* n = new Neuron();
 		Neuron n;
 		if (noLabels)
 		{
