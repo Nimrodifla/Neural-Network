@@ -113,11 +113,13 @@ void Network::train(bool prints)
 	// start the training loop
 	this->training = true;
 
+	std::ofstream file;
+	file.open("log.csv");
+
 	float prevScore = 0;
 	int prevGen = 0;
 	while (this->training)
 	{
-		// DEEP LERNING
 
 		this->generation++;
 
@@ -148,9 +150,13 @@ void Network::train(bool prints)
 				change = "same";
 
 			std::cout << "Gen: " << this->generation << " - Score: " << score << " - " << change << " - last improve at Gen " << prevGen << "\n";
+
+			Helper::addLineToFile(file, (std::to_string(this->generation) + ", " + std::to_string(score)));
 		}
 
 	}
+
+	file.close();
 }
 
 void Network::StopTraining()
@@ -469,7 +475,7 @@ void Network::changeLayers()
 
 	std::vector<Network> clones;
 
-	clones.push_back(*this); // if none of the clones are better keep it as it is
+	//clones.push_back(*this); // if none of the clones are better keep it as it is
 
 	for (i = 1; i < this->layers.size(); i++)
 	{

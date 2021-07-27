@@ -77,3 +77,8 @@ float Helper::generationBasedNudge(int gen)
 
 	return temp;
 }
+
+void Helper::addLineToFile(std::ofstream& file, std::string line)
+{
+	file << line << "\n";
+}

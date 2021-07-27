@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <fstream>
 
 #define WHEN_FORMULA_IS_ONE 5
 
@@ -15,6 +16,7 @@ public:
 	static float randomFloatRange(float low, float high);
 	static float scaleBetweenZeroAndOne(float num);
 	static float generationBasedNudge(int gen);
+	static void addLineToFile(std::ofstream& file, std::string line);
 
 	template <typename T>
 	static std::vector<T> vectorClone(std::vector<T> vectorToClone)
