@@ -541,3 +541,100 @@ void Network::StartTrainig(bool prints)
 	this->trainingThread = new std::thread(&Network::train, this, prints);
 	this->trainingThread->detach();
 }
+
+std::string Network::neuronsToString()
+{
+	int i = 0, j = 0, k = 0;
+	std::string result = "";
+
+	// go over all layers
+	for (i = 0; i < this->layers.size(); i++)
+	{
+		result += "[";
+		Layer* l = &(this->layers[i]);
+		// go over every neuron
+		for (j = 0; j < l->getSize(); j++)
+		{
+			result += "{";
+			Neuron* n = l->getNeuron(j);
+			// go over every weight
+			for (k = 0; k < n->weights.size(); k++)
+			{
+				result += n->weights[k];
+				result += "#";
+			}
+			result = result.substr(0, result.length() - 1); // delete last delimiter
+			result += "}";
+		}
+		result += "]";
+	}
+
+	return result;
+}
+
+void Network::exportNetwork(std::string path)
+{
+	std::ofstream file;
+	file.open(path);
+
+	file << neuronsToString();
+
+	file.close();
+}
+
+void Network::importNetwork(std::string path)
+{
+	std::ifstream file;
+	std::string data = "";
+	// read file data
+	file.open(path);
+	file >> data;
+	file.close();
+
+	int layerIndex = 0;
+	int neuronIndex = 0;
+	int weightIndex = 0;
+
+	int i = 0;
+
+	for (i = 0; i < data.length(); i++)
+	{
+		if (data[i] == '#')
+		{
+			weightIndex++;
+		}
+		else if (data[i] == '}')
+		{
+			neuronIndex++;
+			weightIndex = 0;
+		}
+		else if (data[i] == ']')
+		{
+			layerIndex++;
+			neuronIndex = 0;
+			weightIndex = 0;
+		}
+		else
+		{
+			int lengthOfWeigh = 0;
+			bool end = false;
+			int j = i;
+			while (!end)
+			{
+				if (data[j] == '#')
+				{
+					end = true;
+				}
+				else
+				{
+					lengthOfWeigh++;
+				}
+			}
+			float weight = std::stof(data.substr(i, lengthOfWeigh));
+			// change weight
+			this->layers[layerIndex].getNeuron(neuronIndex)->weights[weightIndex] = weight;
+			// inc i
+			i += (lengthOfWeigh - 1);
+		}
+	}
+}

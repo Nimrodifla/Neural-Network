@@ -41,6 +41,8 @@ private:
 
 	void train(bool prints);
 
+	std::string neuronsToString();
+
 public:
 	Network(int numOfInputNeurons);
 	~Network() = default;
@@ -53,4 +55,7 @@ public:
 	void StopTraining();
 	// input --> output
 	std::string processInput(std::string input);
+	// export / import
+	void exportNetwork(std::string path);
+	void importNetwork(std::string path);
 };
