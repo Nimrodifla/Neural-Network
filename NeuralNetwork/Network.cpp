@@ -475,7 +475,7 @@ void Network::changeLayers()
 
 	std::vector<Network> clones;
 
-	//clones.push_back(*this); // if none of the clones are better keep it as it is
+	clones.push_back(*this); // if none of the clones are better keep it as it is
 
 	for (i = 1; i < this->layers.size(); i++)
 	{
@@ -560,7 +560,7 @@ std::string Network::neuronsToString()
 			// go over every weight
 			for (k = 0; k < n->weights.size(); k++)
 			{
-				result += n->weights[k];
+				result += std::to_string(n->weights[k]);
 				result += "#";
 			}
 			result = result.substr(0, result.length() - 1); // delete last delimiter
@@ -599,42 +599,46 @@ void Network::importNetwork(std::string path)
 
 	for (i = 0; i < data.length(); i++)
 	{
-		if (data[i] == '#')
+		if (data[i] != '[' && data[i] != '{')
 		{
-			weightIndex++;
-		}
-		else if (data[i] == '}')
-		{
-			neuronIndex++;
-			weightIndex = 0;
-		}
-		else if (data[i] == ']')
-		{
-			layerIndex++;
-			neuronIndex = 0;
-			weightIndex = 0;
-		}
-		else
-		{
-			int lengthOfWeigh = 0;
-			bool end = false;
-			int j = i;
-			while (!end)
+			if (data[i] == '#')
 			{
-				if (data[j] == '#')
-				{
-					end = true;
-				}
-				else
-				{
-					lengthOfWeigh++;
-				}
+				weightIndex++;
 			}
-			float weight = std::stof(data.substr(i, lengthOfWeigh));
-			// change weight
-			this->layers[layerIndex].getNeuron(neuronIndex)->weights[weightIndex] = weight;
-			// inc i
-			i += (lengthOfWeigh - 1);
+			else if (data[i] == '}')
+			{
+				neuronIndex++;
+				weightIndex = 0;
+			}
+			else if (data[i] == ']')
+			{
+				layerIndex++;
+				neuronIndex = 0;
+				weightIndex = 0;
+			}
+			else
+			{
+				int lengthOfWeigh = 0;
+				bool end = false;
+				int j = i;
+				while (!end)
+				{
+					if (data[j] == '#' || data[j] == '}')
+					{
+						end = true;
+					}
+					else
+					{
+						lengthOfWeigh++;
+					}
+					j++;
+				}
+				float weight = std::stof(data.substr(i, lengthOfWeigh));
+				// change weight
+				this->layers[layerIndex].getNeuron(neuronIndex)->weights[weightIndex] = weight;
+				// inc i
+				i += (lengthOfWeigh - 1);
+			}
 		}
 	}
 }

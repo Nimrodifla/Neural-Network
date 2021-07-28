@@ -54,6 +54,9 @@ int main()
 	net->StartTrainig(true);
 	getchar(); // training until user presses enter
 	net->StopTraining();
+	net->exportNetwork("export.net");
+
+	//net->importNetwork("export.net");
 
 	// After Training
 	bool flag = true;
