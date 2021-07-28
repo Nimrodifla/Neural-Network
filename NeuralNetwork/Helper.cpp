@@ -1,6 +1,6 @@
 #include "Helper.h"
 
-int rndNum = 13;
+int rndNum = 13 + time(nullptr);
 
 float Helper::definedValue(float x)
 {
@@ -56,10 +56,11 @@ float Helper::randomFloatRange(float low, float high)
 		return 0;
 	}
 
-	std::srand(time(0));
-	float num = rand() + rndNum;
+	std::srand(rndNum);
+	float num = rand();
 	rndNum += 1371;
-	float r = low + static_cast <float> (num) / (static_cast <float> ((RAND_MAX + rndNum) / (high - low)));
+	rndNum = rndNum % RAND_MAX;
+	float r = low + static_cast <float> (num) / (static_cast <float> (RAND_MAX / (high - low)));
 
 	return r;
 }

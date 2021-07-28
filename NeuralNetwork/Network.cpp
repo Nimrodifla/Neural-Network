@@ -81,7 +81,7 @@ void Network::addLayer(Layer layer)
 		std::vector<float> w;
 		for (j = 0; j < lastLayer->getSize(); j++)
 		{
-			w.push_back(Helper::randomFloatRange(0, 1));
+			w.push_back(Helper::randomFloatRange(-1, 1));
 		}
 		layer.getNeuron(i)->weights = w;
 	}
@@ -574,10 +574,18 @@ std::string Network::neuronsToString()
 
 void Network::exportNetwork(std::string path)
 {
+	int i = 0;
+
+	std::string headers = "";
+	for (i = 0; i < this->layers.size(); i++)
+	{
+		headers += "L" + std::to_string(this->layers[i].getSize());
+	}
+
 	std::ofstream file;
 	file.open(path);
 
-	file << neuronsToString();
+	file << headers << "$" << neuronsToString();
 
 	file.close();
 }
@@ -596,10 +604,17 @@ void Network::importNetwork(std::string path)
 	int weightIndex = 0;
 
 	int i = 0;
-
+	bool afterHeaders = false;
 	for (i = 0; i < data.length(); i++)
 	{
-		if (data[i] != '[' && data[i] != '{')
+		if (!afterHeaders)
+		{
+			if (data[i] == '$')
+			{
+				afterHeaders = true;
+			}
+		}
+		else if (data[i] != '[' && data[i] != '{')
 		{
 			if (data[i] == '#')
 			{

@@ -5,16 +5,15 @@ int main()
 	// ---- EXAMPLE OF LIBRARY USE ----
 
 	// Build Neural Network
-	Network* net = new Network(100);
+	int inputNeuronCount = 100;
+	Network* net = new Network(inputNeuronCount);
 	// layer 1 - hidden layer
-	Layer* layer = new Layer(16);
+	int layerNeuronCount = 16;
+	Layer* layer = new Layer(layerNeuronCount);
 	net->addLayer(*layer);
-	// layer 2 - another hidden layer
-	Layer* layer2 = new Layer(16);
-	net->addLayer(*layer2);
-	// layer 3 - output layer
+	// layer 2 - output layer
 	std::vector<std::string> labels{ "-", "|" };
-	Layer* endLayer = new Layer(2, labels);
+	Layer* endLayer = new Layer(labels.size(), labels);
 	net->addLayer(*endLayer);
 	// add data set
 	std::vector<std::string> inputs{
