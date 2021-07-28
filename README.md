@@ -3,6 +3,10 @@
 ## Example
 The following networks attempts to learn to identify horizontal line (-) and vertical line (|) in a 10x10 pixel img, 0 represent white pixels, and 1 represent black pixels.
 
+```cpp
+#include "Network"
+```
+
 ### Build Network
 ```cpp
 // ---- EXAMPLE OF LIBRARY USE ----
