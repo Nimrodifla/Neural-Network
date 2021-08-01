@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
     <body>
+        <center>
         <div id="btns"></div>
         <br>
         <button onclick="highlighting = !highlighting;">toggle highlighting</button>
         <button onclick="ex()">export</button>
+        <button onclick="resetAll()">clear</button>
+        </center>
     </body>
     <script>
         let gridSide = 10;
@@ -62,7 +65,18 @@
                 res += grid[i].toString();
             }
             console.log(res);
-            alert("In console!");
+            //alert("In console!");
+            resetAll();
+        }
+
+        function resetAll()
+        {
+            for (let i = 0; i < btnIds.length; i++)
+            {
+                grid[i] = 0;
+                let elem = document.getElementById(btnIds[i]);
+                elem.style.backgroundColor = "white";
+            }
         }
     </script>
     <style>
