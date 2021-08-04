@@ -313,11 +313,12 @@ std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, s
 	std::vector<float> changes;
 	// find which neurons in backLayer (index - 1) are equal to desired at this input and make their weight stronger
 	bool isGreater = (currVal >= desiredValue); // is the current val greater than the desired value
-	float nudge = Helper::generationBasedNudge(this->generation); /*Helper::randomFloatRange(0, 1);*/ // THE NUDGE
+	float nudge = Helper::generationBasedNudge(this->generation); // THE NUDGE
 	for (i = 0; i < backLayerOutput.size(); i++)
 	{
 		bool isOne = backLayerOutput[i] > 0;
 		bool isInsagnificant = backLayerOutput[i] >= -SAGNIFICANT && backLayerOutput[i] <= SAGNIFICANT;
+		float currentWeight = this->layers[layerIndex].getNeuron(neuronIndex)->weights[i];
 		if (isGreater) // value V
 		{
 			if (isOne && !isInsagnificant)
