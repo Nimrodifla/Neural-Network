@@ -72,6 +72,13 @@ float Helper::scaleBetweenZeroAndOne(float num)
 	return temp;
 }
 
+float Helper::ReLU(float x)
+{
+	float temp = (fabsf(x) + x) / 2.0;
+
+	return temp;
+}
+
 float Helper::generationBasedNudge(int gen)
 {
 	/*

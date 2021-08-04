@@ -16,8 +16,10 @@ public:
 	static std::vector<float> vectorAdd(std::vector<float> a, std::vector<float> b);
 	static float randomFloatRange(float low, float high);
 	static float scaleBetweenZeroAndOne(float num);
+	static float ReLU(float x);
 	static float generationBasedNudge(int gen);
 	static void addLineToFile(std::ofstream& file, std::string line);
+	static float** matrixMultiplication(float** a, float** b);
 
 	template <typename T>
 	static std::vector<T> vectorClone(std::vector<T> vectorToClone)

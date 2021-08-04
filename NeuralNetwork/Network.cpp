@@ -91,6 +91,7 @@ void Network::addLayer(Layer layer)
 			w.push_back(Helper::randomFloatRange(-1, 1));
 		}
 		layer.getNeuron(i)->weights = w;
+		layer.getNeuron(i)->bias = Helper::randomFloatRange(-10, 10);
 	}
 
 	this->layers.push_back(layer);
@@ -122,7 +123,7 @@ void Network::train(bool prints)
 
 	std::ofstream file;
 	file.open(LOG_PATH);
-	file << ""; // clear file
+	file << "Gen, Accuracy\n"; // clear file
 	file.close();
 
 	float prevScore = 0;
@@ -137,33 +138,33 @@ void Network::train(bool prints)
 		// make changes to layers
 		cloneNet.changeLayers();
 
-		float cloneScore = cloneNet.scoreNetwork();
-		prevScore = this->scoreNetwork();
+		float cloneScore = cloneNet.getAccuracy();
+		prevScore = this->getAccuracy();
 
 		// this = new one
 		this->layers = cloneNet.cloneLayers();
 
-		float score = this->scoreNetwork();
+		float accuracy = this->getAccuracy();
 
 		if (prints)
 		{
 			std::string change; // the change in score compared to the prev gen
-			if (prevScore < score)
-				change = "worse";
-			else if (prevScore > score)
+			if (prevScore < accuracy)
+				change = "v";
+			else if (prevScore > accuracy)
 			{
-				change = "better";
+				change = "^";
 				prevGen = this->generation;
 			}
 			else
-				change = "same";
+				change = "-";
 
-			std::cout << "Gen: " << this->generation << " - Score: " << score << " - " << change << " - last improve at Gen " << prevGen << "\n";
-
-			file.open(LOG_PATH, std::ofstream::app);
-			Helper::addLineToFile(file, (std::to_string(this->generation) + ", " + std::to_string(score)));
-			file.close();
+			std::cout << this->generation << ". Accuracy: " << accuracy << " " << change << " last improve at " << prevGen << "\n";
 		}
+
+		file.open(LOG_PATH, std::ofstream::app);
+		Helper::addLineToFile(file, (std::to_string(this->generation) + ", " + std::to_string(accuracy)));
+		file.close();
 
 	}
 }
@@ -273,9 +274,7 @@ std::vector<Neuron> Network::getOutputOfLayer(int layerIndex, std::string input)
 			{
 				neuronValue += (prevLayer->getNeuron(k)->value) * (n->weights[k]);
 			}
-			n->value = Helper::scaleBetweenZeroAndOne(neuronValue/* + n->bias*/);
-			int x = 5;
-			x = 9;
+			n->value = Helper::ReLU(neuronValue/* + n->bias*/);
 		}
 	}
 
@@ -662,4 +661,77 @@ void Network::importNetwork(std::string path)
 			}
 		}
 	}
+}
+
+float Network::getAccuracy()
+{
+	float sum = 0;
+	int i = 0;
+
+	for (i = 0; i < this->inputs.size(); i++)
+	{
+		std::string out = this->outputs[i];
+		std::string netOut = this->processInput(this->inputs[i]);
+
+		if (out == netOut)
+		{
+			sum++;
+		}
+	}
+
+	return (sum / this->inputs.size());
+}
+
+Neuron* Network::getNeuronByPos(NeuronPos pos)
+{
+	return this->layers[pos.layerIn].getNeuron(pos.neuronIn);
+}
+
+float Network::calcNeuronErr(NeuronPos pos, std::string input, std::string output)
+{
+	float neuronVal = this->getOutputLayerResult(input)[pos.neuronIn].value;
+	float trueVal = 0;
+	if (this->getIndexOfOutput(output) == pos.neuronIn)
+	{
+		trueVal = 1;
+	}
+
+	float err = neuronVal - trueVal;
+	return err;
+}
+
+int Network::getIndexOfOutput(std::string output)
+{
+	return this->layers[this->layers.size() - 1].getLabelIndex(output);
+}
+
+void Network::forwardPropagation()
+{
+
+}
+
+void Network::backPruopagation()
+{
+	int i = 0, j = 0;
+
+	float m = this->inputs.size();
+	int errorsSize = this->layers[this->layers.size() - 1].getSize();
+	float** errorsMat = new float* [m]; // dZ2
+
+	// dZ2 = A2 - one_hot_Y
+	for (i = 0; i < m; i++)
+	{
+		errorsMat[i] = new float[errorsSize];
+		for (j = 0; j < errorsSize; j++)
+		{
+			NeuronPos pos;
+			pos.layerIn = this->layers.size() - 1;
+			pos.neuronIn = j;
+
+			errorsMat[i][j] = calcNeuronErr(pos, this->inputs[i], this->outputs[i]);
+		}
+	}
+
+	// dW2 = 1 / m * dZ2.dot(A1.T)
+	1 / m
 }

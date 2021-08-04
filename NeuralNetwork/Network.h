@@ -9,6 +9,12 @@
 #define SAGNIFICANT 0.1
 #define LOG_PATH "log.csv"
 
+struct NeuronPos
+{
+	int layerIn;
+	int neuronIn;
+} typedef NeuronPos;
+
 class Network
 {
 private:
@@ -40,6 +46,16 @@ private:
 	void train(bool prints);
 
 	std::string neuronsToString();
+
+	// take 3
+
+	float getAccuracy();
+
+	Neuron* getNeuronByPos(NeuronPos pos);
+	float calcNeuronErr(NeuronPos pos, std::string input, std::string output);
+	int getIndexOfOutput(std::string output);
+	void backPruopagation();
+	void forwardPropagation();
 
 public:
 	Network(int numOfInputNeurons);
