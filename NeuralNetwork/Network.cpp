@@ -70,6 +70,13 @@ Network::Network(int numOfInputNeurons)
 	this->layers.push_back(inputLayer);
 }
 
+void Network::addLayer(int neuronCount)
+{
+	Layer l(neuronCount);
+
+	this->addLayer(l);
+}
+
 void Network::addLayer(Layer layer)
 {
 	int i = 0, j = 0;
@@ -114,7 +121,9 @@ void Network::train(bool prints)
 	this->training = true;
 
 	std::ofstream file;
-	file.open("log.csv");
+	file.open(LOG_PATH);
+	file << ""; // clear file
+	file.close();
 
 	float prevScore = 0;
 	int prevGen = 0;
@@ -151,12 +160,12 @@ void Network::train(bool prints)
 
 			std::cout << "Gen: " << this->generation << " - Score: " << score << " - " << change << " - last improve at Gen " << prevGen << "\n";
 
+			file.open(LOG_PATH, std::ofstream::app);
 			Helper::addLineToFile(file, (std::to_string(this->generation) + ", " + std::to_string(score)));
+			file.close();
 		}
 
 	}
-
-	file.close();
 }
 
 void Network::StopTraining()
@@ -279,10 +288,6 @@ std::vector<Neuron> Network::getOutputOfLayer(int layerIndex, std::string input)
 
 	return layerNeurons;
 }
-
-
-
-// DEEP LEARNING - TAKE 2
 
 std::vector<float> Network::calcWeightChanges(int layerIndex, int neuronIndex, std::string input, float desiredValue)
 {

@@ -74,7 +74,13 @@ float Helper::scaleBetweenZeroAndOne(float num)
 
 float Helper::generationBasedNudge(int gen)
 {
-	float temp = randomFloatRange(0.1, 1); // is just random, not based ob the gen
+	float max = (gen / 100) / powf((gen / 100), 2);
+	if (max > MAX_NUDGE)
+	{
+		max = MAX_NUDGE;
+	}
+
+	float temp = randomFloatRange(0, max); // is just random, not based on the gen
 
 	return temp;
 }

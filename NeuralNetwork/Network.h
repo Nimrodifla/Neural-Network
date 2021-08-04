@@ -6,10 +6,8 @@
 #include <mutex>
 #include "Layer.h"
 
-#define NETWORK_CLONES_EACH_GENERATION 1000
-#define DEEP_LEARNING true
 #define SAGNIFICANT 0.1
-//#define NUDGE_VALUE 0.5
+#define LOG_PATH "log.csv"
 
 class Network
 {
@@ -48,6 +46,7 @@ public:
 	~Network() = default;
 
 	// build network
+	void addLayer(int neuronCount);
 	void addLayer(Layer layer);
 	void addData(std::vector<std::string> inputs, std::vector<std::string> outputs);
 	// train network

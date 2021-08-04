@@ -9,12 +9,15 @@ int main()
 	Network* net = new Network(inputNeuronCount);
 	// layer 1 - hidden layer
 	int layerNeuronCount = 16;
-	Layer* layer = new Layer(layerNeuronCount);
-	net->addLayer(*layer);
+	net->addLayer(layerNeuronCount);
 	// layer 2 - hidden layer
-	layerNeuronCount = 16;
-	layer = new Layer(layerNeuronCount);
-	net->addLayer(*layer);
+	net->addLayer(layerNeuronCount);
+	/*
+	// layer 3 - hidden layer
+	net->addLayer(layerNeuronCount);
+	// layer 4 - hidden layer
+	net->addLayer(layerNeuronCount);
+	*/
 	// layer - output layer
 	std::vector<std::string> labels{ "-", "|", "/", "\\" };
 	Layer* endLayer = new Layer(labels.size(), labels);
@@ -226,9 +229,7 @@ int main()
 	net->StartTrainig(true);
 	getchar(); // training until user presses enter
 	net->StopTraining();
-	net->exportNetwork("export.net");
-
-	//net->importNetwork("export.net");
+	net->exportNetwork("model.net");
 
 	// After Training
 	bool flag = true;

@@ -5,6 +5,7 @@
 #include <fstream>
 
 #define WHEN_FORMULA_IS_ONE 5
+#define MAX_NUDGE 2
 
 class Helper
 {
