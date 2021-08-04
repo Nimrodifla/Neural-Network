@@ -733,5 +733,32 @@ void Network::backPruopagation()
 	}
 
 	// dW2 = 1 / m * dZ2.dot(A1.T)
-	1 / m
+	float** A1 = new float* [m]; // A1
+	for (i = 0; i < m; i++)
+	{
+		A1[i] = new float[this->layers[this->layers.size() - 2].getSize()];
+		for (j = 0; j < this->layers[this->layers.size() - 2].getSize(); j++)
+		{
+			A1[i][j] = this->layers[this->layers.size() - 2].getNeuron(j)->value;
+		}
+	}
+
+	float** A1_rotated = Helper::rotateMatrix(A1);
+
+	float** dW2 = Helper::matrixMultiplication(errorsMat, A1_rotated);
+
+	for (i = 0; i < m * this->layers[this->layers.size() - 2].getSize(); i++)
+	{
+		dW2[0][i] *= 1 / m;
+	}
+
+	// db2 = 1 / m * np.sum(dZ2, 2)
+	float** db2 = Helper::matrixSum(errorsMat, 2);
+	// idk the size - need to find what sum does and then ill kmow the size
+	for (i = 0; i < m; i++)
+	{
+		db2[0][i] *= 1 / m;
+	}
+
+	// dZ1 = W2.T.dot(dZ2) * deriv_ReLU(Z1)
 }

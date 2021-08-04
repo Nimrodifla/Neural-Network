@@ -20,6 +20,9 @@ public:
 	static float generationBasedNudge(int gen);
 	static void addLineToFile(std::ofstream& file, std::string line);
 	static float** matrixMultiplication(float** a, float** b);
+	static float** rotateMatrix(float** matrix);
+	static float** matrixSum(float** matrix, int a);
+	static int deriv_ReLU(float x);
 
 	template <typename T>
 	static std::vector<T> vectorClone(std::vector<T> vectorToClone)

@@ -97,3 +97,8 @@ void Helper::addLineToFile(std::ofstream& file, std::string line)
 {
 	file << line << "\n";
 }
+
+int Helper::deriv_ReLU(float x)
+{
+	return x > 0;
+}
