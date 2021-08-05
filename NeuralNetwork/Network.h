@@ -9,15 +9,14 @@
 #define SAGNIFICANT 0.1
 #define LOG_PATH "log.csv"
 
-struct NeuronPos
-{
-	int layerIn;
-	int neuronIn;
-} typedef NeuronPos;
-
 class Network
 {
 private:
+	// weights and baises
+	Matrix* Ws;
+	Matrix* Bs;
+	//
+
 	std::thread* trainingThread;
 
 	std::vector<Layer> layers;
@@ -54,8 +53,16 @@ private:
 	Neuron* getNeuronByPos(NeuronPos pos);
 	float calcNeuronErr(NeuronPos pos, std::string input, std::string output);
 	int getIndexOfOutput(std::string output);
-	void backPruopagation();
-	void forwardPropagation();
+	float* inputStrToValuesArr(std::string input);
+	float* outputLayerDesiredOutput(int outputIndex);
+	void updateParams(Matrix* Ws, Matrix* Bs, Matrix* dWs, Matrix* dBs, float alpha); // updated params are: Ws, Bs
+	void backPropagation(Matrix* Zs, Matrix* As, Matrix* Ws, Matrix Inputs, Matrix Outputs, Matrix* dWs, Matrix* dBs); // returning values throw the parameters (dWs, dBs)
+	void forwardPropagation(Matrix Inputs, Matrix* Ws, Matrix* Bs, Matrix* Zs, Matrix* As); // returning values throw the parameters (Zs, As)
+	void updateNeuronProperties(Matrix* Bs, Matrix* Ws);
+
+	void gradientDescent(float alpha);
+
+	std::string networkOutput(std::string input);
 
 public:
 	Network(int numOfInputNeurons);

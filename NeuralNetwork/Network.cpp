@@ -104,8 +104,15 @@ void Network::addData(std::vector<std::string> inputs, std::vector<std::string> 
 	{
 		for (i = 0; i < inputs.size(); i++)
 		{
-			this->inputs.push_back(inputs[i]);
-			this->outputs.push_back(outputs[i]);
+			if (inputs[i].size() != this->layers[0].getSize() || outputs[i].size() != this->layers[0].getSize())
+			{
+				throw std::exception("Some input/output's length isn't equal to the num of neurons in the input layer...");
+			}
+			else
+			{
+				this->inputs.push_back(inputs[i]);
+				this->outputs.push_back(outputs[i]);
+			}
 		}
 	}
 	else
@@ -671,7 +678,7 @@ float Network::getAccuracy()
 	for (i = 0; i < this->inputs.size(); i++)
 	{
 		std::string out = this->outputs[i];
-		std::string netOut = this->processInput(this->inputs[i]);
+		std::string netOut = this->networkOutput(this->inputs[i]);
 
 		if (out == netOut)
 		{
@@ -705,70 +712,300 @@ int Network::getIndexOfOutput(std::string output)
 	return this->layers[this->layers.size() - 1].getLabelIndex(output);
 }
 
-void Network::forwardPropagation()
+void Network::forwardPropagation(Matrix Inputs, Matrix* Ws, Matrix* Bs, Matrix* Zs, Matrix* As)
 {
+	int i = 0, j = 0, k = 0;
+	int numOfLayers = this->layers.size();
+	Zs = new Matrix[numOfLayers - 1];
+	As = new Matrix[numOfLayers - 1];
+
+	for (i = 0; i < (numOfLayers - 1); i++)
+	{
+		Zs[i].rows = this->inputs.size();
+		Zs[i].colums = this->layers[i + 1].getSize();
+		Matrix backLayerOutput;
+		if (i == 0)
+		{
+			backLayerOutput = Inputs;
+		}
+		else
+		{
+			backLayerOutput = As[i - 1];
+		}
+		Zs[i] = Helper::matrixMultiplication(Ws[i], backLayerOutput);
+
+		// add bais
+		for (j = 0; j < Zs[i].rows; j++)
+		{
+			for (k = 0; k < Zs[i].colums; k++)
+				Zs[i].maxrix[j][k] += Bs[i].maxrix[j][k];
+		}
+
+		bool isLastIteration = (i == numOfLayers - 2);
+		if (isLastIteration && i > 0)
+		{
+			As[i] = Helper::matrixSoftmax(As[i - 1]);
+		}
+		else
+		{
+			As[i] = Helper::matrixReLU(Zs[i]);
+		}
+	}
+}
+
+void Network::backPropagation(Matrix* Zs, Matrix* As, Matrix* Ws, Matrix Inputs, Matrix Outputs, Matrix* dWs, Matrix* dBs)
+{
+	int i = 0, j = 0, k = 0;
+	int numOfLayers = this->layers.size();
+
+	float m = Outputs.colums * Outputs.rows;
+
+	Helper::rotateMatrix(Outputs);
+
+	Matrix* dZs = new Matrix[numOfLayers - 1];
+	dWs = new Matrix[numOfLayers - 1];
+	dBs = new Matrix[numOfLayers - 1];
+
+	for (i = (numOfLayers - 2); i >= 0; i--)
+	{
+		if (i == 0)
+		{
+			// update dZ
+			Matrix temp = Helper::cloneMatrix(Ws[i + 1]);
+			Helper::rotateMatrix(temp);
+			dZs[i] = Helper::matrixMultiplication(temp, dZs[i + 1]);
+			Matrix dMat = Helper::matrixDerinReLU(Zs[i]);
+			for (j = 0; j < dZs[i].rows; j++)
+			{
+				for (k = 0; k < dZs[i].colums; k++)
+				{
+					dZs[i].maxrix[j][k] *= dMat.maxrix[j][k];
+				}
+			}
+
+			// update dW
+			Helper::freeMatrix(temp);
+			temp = Helper::cloneMatrix(Inputs);
+			Helper::rotateMatrix(temp);
+			dWs[i] = Helper::matrixMultiplication(dZs[i], temp);
+			Helper::freeMatrix(temp);
+			Helper::multiMatrixBy(dWs[i], (1 / m));
+
+			// update dB
+			float sum = Helper::matrixSum(dZs[i]);
+			Helper::multiMatrixBy(dBs[i], (1 / m));
+		}
+		else
+		{
+
+		}
+	}
+
 
 }
 
-void Network::backPruopagation()
+void Network::gradientDescent(float alpha)
 {
 	int i = 0, j = 0;
+	int numOfLayers = this->layers.size();
 
-	float m = this->inputs.size();
-	int errorsSize = this->layers[this->layers.size() - 1].getSize();
-	float** errorsMat = new float* [m]; // dZ2
-	float** W2; // idk
-	float** Z1; // idk
+	// -- INIT --
 
-	// dZ2 = A2 - one_hot_Y
-	for (i = 0; i < m; i++)
+	// init WEIGHTS
+	this->Ws = new Matrix[numOfLayers - 1];
+	for (i = 0; i < (numOfLayers - 1); i++)
 	{
-		errorsMat[i] = new float[errorsSize];
-		for (j = 0; j < errorsSize; j++)
-		{
-			NeuronPos pos;
-			pos.layerIn = this->layers.size() - 1;
-			pos.neuronIn = j;
+		Ws[i].rows = this->layers[i + 1].getSize();
+		Ws[i].colums = this->layers[i].getSize();
+		Ws[i].maxrix = Helper::randomMaxrixInRange(Ws[i].rows, Ws[i].colums, 0, 1);
+	}
+	
+	// init biases
+	this->Bs = new Matrix[numOfLayers - 1];
+	for (i = 0; i < (numOfLayers - 1); i++)
+	{
+		Bs[i].rows = this->layers[i + 1].getSize();
+		Bs[i].colums = 1;
+		Bs[i].maxrix = Helper::randomMaxrixInRange(Bs[i].rows, Bs[i].colums, 0, 1);
+	}
 
-			errorsMat[i][j] = calcNeuronErr(pos, this->inputs[i], this->outputs[i]);
+	// put all values in their place (neurons)
+	this->updateNeuronProperties(Bs, Ws);
+
+	Matrix Inputs;
+	// input -> marix
+	Inputs.rows = this->inputs.size();
+	Inputs.colums = this->layers[0].getSize();
+	Inputs.maxrix = new float* [Inputs.rows];
+	for (i = 0; i < Inputs.rows; i++)
+	{
+		Inputs.maxrix[i] = this->inputStrToValuesArr(this->inputs[i]);
+	}
+
+	Matrix Outputs;
+	// output -> matrix
+	Outputs.rows = this->outputs.size();
+	Outputs.colums = this->layers[this->layers.size() - 1].getSize();
+	Outputs.maxrix = new float* [Outputs.rows];
+	for (i = 0; i < Outputs.rows; i++)
+	{
+		Outputs.maxrix[i] = this->outputLayerDesiredOutput(i);
+	}
+
+	while (true)
+	{
+		Matrix* As = nullptr;
+		Matrix* Zs = nullptr;
+		this->forwardPropagation(Inputs, Ws, Bs, Zs, As);
+		Matrix* dWs = nullptr;
+		Matrix* dBs = nullptr;
+		this->backPropagation(Zs, As, Ws, Inputs, Outputs, dWs, dBs);
+		this->updateParams(Ws, Bs, dWs, dBs, alpha);
+		
+		// free matrixes
+		for (i = 0; i < (numOfLayers - 1); i++)
+		{
+			Helper::freeMatrix(As[i]);
+			Helper::freeMatrix(Zs[i]);
+			Helper::freeMatrix(dWs[i]);
+			Helper::freeMatrix(dBs[i]);
+		}
+		delete[] As;
+		delete[] Zs;
+		delete[] dWs;
+		delete[] dBs;
+
+		this->generation++;
+		std::cout << this->generation << ". Accuracy: " << this->getAccuracy() << "\n";
+	}
+}
+
+void Network::updateParams(Matrix* Ws, Matrix* Bs, Matrix* dWs, Matrix* dBs, float alpha)
+{
+	int i = 0, j = 0;
+	int numOfLayers = this->layers.size();
+	
+	for (i = 0; i < (numOfLayers - 1); i++)
+	{
+		for (j = 0; j < Ws[i].rows; j++)
+		{
+			for (int k = 0; k < Ws[i].colums; k++)
+			{
+				Ws[i].maxrix[j][k] -= (dWs[i].maxrix[j][k] * alpha);
+			}
+		}
+
+		for (j = 0; j < Bs[i].rows; j++)
+		{
+			for (int k = 0; k < Bs[i].colums; k++)
+			{
+				Bs[i].maxrix[j][k] -= (dBs[i].maxrix[j][k] * alpha);
+			}
+		}
+	}
+}
+
+void Network::updateNeuronProperties(Matrix* Bs, Matrix* Ws)
+{
+	int i = 0, j = 0, k = 0;
+	int numOfLayers = this->layers.size();
+
+	for (i = 0; i < numOfLayers; i++)
+	{
+		Layer* layer = &(this->layers[i]);
+		if (i == 0) // input layer
+		{
+			for (j = 0; j < layer->getSize(); j++)
+			{
+				Neuron* n = layer->getNeuron(j);
+				n->bias = 0;
+				std::vector<float> w{ 1 };
+				n->weights = w;
+			}
+		}
+		else // not the input layer
+		{
+			for (j = 0; j < layer->getSize(); j++)
+			{
+				Neuron* n = layer->getNeuron(j);
+				// bias
+				n->bias = Bs[i - 1].maxrix[j][0];
+				// weights
+				std::vector<float> w;
+				for (k = 0; k < Ws[i - 1].colums; k++)
+				{
+					w.push_back(Ws[i - 1].maxrix[j][k]);
+				}
+			}
+		}
+	}
+}
+
+float* Network::outputLayerDesiredOutput(int outputIndex)
+{
+	int i = 0;
+	float* result = new float[this->layers[this->layers.size() - 1].getSize()];
+
+	std::string output = this->outputs[outputIndex];
+
+	int litNeuronIndex = this->layers[this->layers.size() - 1].getLabelIndex(output);
+	
+	for (i = 0; i < this->layers[this->layers.size() - 1].getSize(); i++)
+	{
+		if (i == litNeuronIndex)
+		{
+			result[i] = 1;
+		}
+		else
+		{
+			result[i] = 0;
 		}
 	}
 
-	// dW2 = 1 / m * dZ2.dot(A1.T)
-	float** A1 = new float* [m]; // A1
-	for (i = 0; i < m; i++)
+	return result;
+}
+
+float* Network::inputStrToValuesArr(std::string input)
+{
+	int j = 0;
+
+	int inputSize = this->layers[0].getSize();
+	float* result = new float[inputSize];
+	for (j = 0; j < inputSize; j++)
 	{
-		A1[i] = new float[this->layers[this->layers.size() - 2].getSize()];
-		for (j = 0; j < this->layers[this->layers.size() - 2].getSize(); j++)
+		result[j] = std::stoi(std::to_string(input[j]));
+	}
+
+	return result;
+}
+
+std::string Network::networkOutput(std::string input)
+{
+	int i = 0;
+	int numOfLayers = this->layers.size();
+
+	Matrix Input;
+	Input.rows = 1;
+	Input.colums = input.size();
+	Input.maxrix = new float* [1];
+	Input.maxrix[0] = this->inputStrToValuesArr(input);
+
+	Matrix* Zs = nullptr;
+	Matrix* As = nullptr;
+	this->forwardPropagation(Input, this->Ws, this->Bs, Zs, As);
+
+	float* output = As[numOfLayers - 2].maxrix[0];
+	Layer* lastLayer = &(this->layers[numOfLayers - 1]);
+	float max = 0;
+	int index = 0;
+	for (i = 0; i < lastLayer->getSize(); i++)
+	{
+		if (output[i] > max)
 		{
-			A1[i][j] = this->layers[this->layers.size() - 2].getNeuron(j)->value;
+			max = output[i];
+			index = i;
 		}
 	}
 
-	float** A1_rotated = Helper::rotateMatrix(A1);
-
-	float** dW2 = Helper::matrixMultiplication(errorsMat, A1_rotated);
-
-	for (i = 0; i < m * this->layers[this->layers.size() - 2].getSize(); i++)
-	{
-		dW2[0][i] *= 1 / m;
-	}
-
-	// db2 = 1 / m * np.sum(dZ2, 2)
-	float** db2 = Helper::matrixSum(errorsMat, 2);
-	// idk the size - need to find what sum does and then ill kmow the size
-	for (i = 0; i < m; i++)
-	{
-		db2[0][i] *= 1 / m;
-	}
-
-	// dZ1 = W2.T.dot(dZ2) * deriv_ReLU(Z1)
-	float** dZ1 = Helper::matrixMultiplication(Helper::rotateMatrix(W2), errorsMat);
-	// idk the size
-	for (i = 0; i < m; i++)
-	{
-		dZ1[0][i] *= Helper::deriv_ReLU(Z1[0][i]);
-	}
-
-	//
+	return (lastLayer->getNeuron(index)->label);
 }
