@@ -717,6 +717,8 @@ void Network::backPruopagation()
 	float m = this->inputs.size();
 	int errorsSize = this->layers[this->layers.size() - 1].getSize();
 	float** errorsMat = new float* [m]; // dZ2
+	float** W2; // idk
+	float** Z1; // idk
 
 	// dZ2 = A2 - one_hot_Y
 	for (i = 0; i < m; i++)
@@ -761,4 +763,12 @@ void Network::backPruopagation()
 	}
 
 	// dZ1 = W2.T.dot(dZ2) * deriv_ReLU(Z1)
+	float** dZ1 = Helper::matrixMultiplication(Helper::rotateMatrix(W2), errorsMat);
+	// idk the size
+	for (i = 0; i < m; i++)
+	{
+		dZ1[0][i] *= Helper::deriv_ReLU(Z1[0][i]);
+	}
+
+	//
 }

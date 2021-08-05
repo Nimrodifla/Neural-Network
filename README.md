@@ -16,8 +16,7 @@ int inputNeuronCount = 100;
 Network* net = new Network(inputNeuronCount);
 // layer 1 - hidden layer
 int layerNeuronCount = 16;
-Layer* layer = new Layer(layerNeuronCount);
-net->addLayer(*layer);
+net->addLayer(layerNeuronCount);
 // layer 2 - output layer
 std::vector<std::string> labels{ "-", "|" };
 Layer* endLayer = new Layer(labels.size(), labels);
