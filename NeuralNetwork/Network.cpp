@@ -768,7 +768,7 @@ void Network::backPropagation(Matrix* Zs, Matrix* As, Matrix* Ws, Matrix Inputs,
 
 	for (i = (numOfLayers - 2); i >= 0; i--)
 	{
-		if (i == 0)
+		if (i == 0) // first hidden layer
 		{
 			// update dZ
 			Matrix temp = Helper::cloneMatrix(Ws[i + 1]);
@@ -795,9 +795,44 @@ void Network::backPropagation(Matrix* Zs, Matrix* As, Matrix* Ws, Matrix Inputs,
 			float sum = Helper::matrixSum(dZs[i]);
 			Helper::multiMatrixBy(dBs[i], (1 / m));
 		}
-		else
+		else if (i == (numOfLayers - 2)) // output layer
 		{
+			// update dZ
+			dZs[i] = Helper::cloneMatrix(Outputs);
+			for (j = 0; j < dZs[i].rows; j++)
+			{
+				for (k = 0; k < dZs[i].colums; k++)
+				{
+					dZs[i].maxrix[j][k] = As[i].maxrix[j][k] - dZs[i].maxrix[j][k];
+				}
+			}
 
+			// update dW
+			Matrix A_rotated = Helper::cloneMatrix(As[i - 1]);
+			Helper::rotateMatrix(A_rotated);
+			dWs[i] = Helper::matrixMultiplication(dZs[i], A_rotated);
+			Helper::multiMatrixBy(dWs[i], (1 / m));
+		}
+		else // mid layers
+		{
+			// update dZ
+			Matrix temp = Helper::cloneMatrix(Ws[i + 1]);
+			Helper::rotateMatrix(temp);
+			dZs[i] = Helper::matrixMultiplication(temp, dZs[i + 1]);
+			Matrix dMat = Helper::matrixDerinReLU(Zs[i]);
+			for (j = 0; j < dZs[i].rows; j++)
+			{
+				for (k = 0; k < dZs[i].colums; k++)
+				{
+					dZs[i].maxrix[j][k] *= dMat.maxrix[j][k];
+				}
+			}
+
+			// update dW
+			Matrix A_rotated = Helper::cloneMatrix(As[i - 1]);
+			Helper::rotateMatrix(A_rotated);
+			dWs[i] = Helper::matrixMultiplication(dZs[i], A_rotated);
+			Helper::multiMatrixBy(dWs[i], (1 / m));
 		}
 	}
 
@@ -817,7 +852,7 @@ void Network::gradientDescent(float alpha)
 	{
 		Ws[i].rows = this->layers[i + 1].getSize();
 		Ws[i].colums = this->layers[i].getSize();
-		Ws[i].maxrix = Helper::randomMaxrixInRange(Ws[i].rows, Ws[i].colums, 0, 1);
+		Ws[i].maxrix = Helper::randomMaxrixInRange(Ws[i].rows, Ws[i].colums, -0.5, 0.5);
 	}
 	
 	// init biases
